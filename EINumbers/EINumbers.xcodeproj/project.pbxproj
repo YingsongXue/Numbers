@@ -52,6 +52,12 @@
 		B55CC91B181B60E0003F5CB2 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = B55CC91A181B60E0003F5CB2 /* MBProgressHUD.m */; };
 		B55CC91F181B6153003F5CB2 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = B55CC91E181B6153003F5CB2 /* Reachability.m */; };
 		B55CC921181B6198003F5CB2 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B55CC920181B6198003F5CB2 /* libxml2.dylib */; };
+		B5A21D90181B6AA0002F4E2D /* EIMainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A21D8F181B6AA0002F4E2D /* EIMainViewController.m */; };
+		B5A21D93181B6AD0002F4E2D /* EIQuickNavView.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A21D92181B6AD0002F4E2D /* EIQuickNavView.m */; };
+		B5A21D96181B6B0E002F4E2D /* EIPullData.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A21D95181B6B0E002F4E2D /* EIPullData.m */; };
+		B5A21D99181B6C49002F4E2D /* 57.png in Resources */ = {isa = PBXBuildFile; fileRef = B5A21D97181B6C49002F4E2D /* 57.png */; };
+		B5A21D9A181B6C49002F4E2D /* 114.png in Resources */ = {isa = PBXBuildFile; fileRef = B5A21D98181B6C49002F4E2D /* 114.png */; };
+		B5A21D9C181B6D4C002F4E2D /* EIQuickNavPosition.plist in Resources */ = {isa = PBXBuildFile; fileRef = B5A21D9B181B6D4C002F4E2D /* EIQuickNavPosition.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -141,6 +147,15 @@
 		B55CC91D181B6153003F5CB2 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		B55CC91E181B6153003F5CB2 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		B55CC920181B6198003F5CB2 /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
+		B5A21D8E181B6AA0002F4E2D /* EIMainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EIMainViewController.h; sourceTree = "<group>"; };
+		B5A21D8F181B6AA0002F4E2D /* EIMainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EIMainViewController.m; sourceTree = "<group>"; };
+		B5A21D91181B6AD0002F4E2D /* EIQuickNavView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EIQuickNavView.h; sourceTree = "<group>"; };
+		B5A21D92181B6AD0002F4E2D /* EIQuickNavView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EIQuickNavView.m; sourceTree = "<group>"; };
+		B5A21D94181B6B0E002F4E2D /* EIPullData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EIPullData.h; sourceTree = "<group>"; };
+		B5A21D95181B6B0E002F4E2D /* EIPullData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EIPullData.m; sourceTree = "<group>"; };
+		B5A21D97181B6C49002F4E2D /* 57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 57.png; sourceTree = "<group>"; };
+		B5A21D98181B6C49002F4E2D /* 114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 114.png; sourceTree = "<group>"; };
+		B5A21D9B181B6D4C002F4E2D /* EIQuickNavPosition.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = EIQuickNavPosition.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -247,6 +262,8 @@
 		B55CC89E181B54D7003F5CB2 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				B5A21D97181B6C49002F4E2D /* 57.png */,
+				B5A21D98181B6C49002F4E2D /* 114.png */,
 			);
 			path = Images;
 			sourceTree = "<group>";
@@ -254,6 +271,7 @@
 		B55CC8A0181B55A9003F5CB2 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				B5A21D9B181B6D4C002F4E2D /* EIQuickNavPosition.plist */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -261,6 +279,8 @@
 		B55CC8A1181B55CF003F5CB2 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
+				B5A21D8E181B6AA0002F4E2D /* EIMainViewController.h */,
+				B5A21D8F181B6AA0002F4E2D /* EIMainViewController.m */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -268,6 +288,8 @@
 		B55CC8A2181B55CF003F5CB2 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				B5A21D94181B6B0E002F4E2D /* EIPullData.h */,
+				B5A21D95181B6B0E002F4E2D /* EIPullData.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -275,6 +297,8 @@
 		B55CC8A3181B55CF003F5CB2 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				B5A21D91181B6AD0002F4E2D /* EIQuickNavView.h */,
+				B5A21D92181B6AD0002F4E2D /* EIQuickNavView.m */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -477,7 +501,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5A21D9A181B6C49002F4E2D /* 114.png in Resources */,
 				B55CC876181B544E003F5CB2 /* InfoPlist.strings in Resources */,
+				B5A21D99181B6C49002F4E2D /* 57.png in Resources */,
+				B5A21D9C181B6D4C002F4E2D /* EIQuickNavPosition.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -489,6 +516,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B55CC8EC181B58C0003F5CB2 /* ASIFormDataRequest.m in Sources */,
+				B5A21D90181B6AA0002F4E2D /* EIMainViewController.m in Sources */,
 				B55CC912181B5BAC003F5CB2 /* FMDatabase+InMemoryOnDiskIO.m in Sources */,
 				B55CC8F2181B58C0003F5CB2 /* ASICloudFilesContainer.m in Sources */,
 				B55CC8ED181B58C0003F5CB2 /* ASIHTTPRequest.m in Sources */,
@@ -502,10 +530,12 @@
 				B55CC917181B5BAC003F5CB2 /* FMResultSet.m in Sources */,
 				B55CC8F8181B58C0003F5CB2 /* ASIS3Bucket.m in Sources */,
 				B55CC8EF181B58C0003F5CB2 /* ASINetworkQueue.m in Sources */,
+				B5A21D93181B6AD0002F4E2D /* EIQuickNavView.m in Sources */,
 				B55CC8F6181B58C0003F5CB2 /* ASICloudFilesObjectRequest.m in Sources */,
 				B55CC91B181B60E0003F5CB2 /* MBProgressHUD.m in Sources */,
 				B55CC913181B5BAC003F5CB2 /* FMDatabase.m in Sources */,
 				B55CC8F1181B58C0003F5CB2 /* ASICloudFilesCDNRequest.m in Sources */,
+				B5A21D96181B6B0E002F4E2D /* EIPullData.m in Sources */,
 				B55CC8F7181B58C0003F5CB2 /* ASICloudFilesRequest.m in Sources */,
 				B55CC8F3181B58C0003F5CB2 /* ASICloudFilesContainerRequest.m in Sources */,
 				B55CC8EB181B58C0003F5CB2 /* ASIDownloadCache.m in Sources */,
@@ -667,6 +697,7 @@
 				B55CC896181B544E003F5CB2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
