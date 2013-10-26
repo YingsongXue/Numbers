@@ -7,6 +7,8 @@
 //
 
 #import "EIAppDelegate.h"
+#import "EIQuickNavView.h"
+#import "EIMainViewController.h"
 
 @implementation EIAppDelegate
 
@@ -20,9 +22,31 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]]autorelease];
+    
+    EIMainViewController *mainViewController = [[[EIMainViewController alloc] init] autorelease];
+    
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:mainViewController];
+    
+    self.window.rootViewController = nav;
+    [nav release];
+    
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
+    EIQuickNavView *navView = [EIQuickNavView defaultButtonBoard];
+    //    board.boardImage = [UIImage imageNamed:@"button3.png"];
+    navView.buttonNumber = 3;
+    NSArray *imgArray = [NSArray arrayWithObjects:[UIImage imageNamed:@"button1.png"],
+                         [UIImage imageNamed:@"button2.png"],
+                         [UIImage imageNamed:@"button3.png"],nil];
+    navView.buttonImageArray = imgArray;
+    if (!navView.running) {
+        [navView startRunning];
+    }
+    
+    [self.window makeKeyAndVisible];
+    
     return YES;
 }
 

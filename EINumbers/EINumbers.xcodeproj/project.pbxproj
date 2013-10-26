@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15279AA3181B72F5006C06DE /* 40.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279A9E181B72F5006C06DE /* 40.png */; };
+		15279AA4181B72F5006C06DE /* block.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279A9F181B72F5006C06DE /* block.png */; };
+		15279AA5181B72F5006C06DE /* bluetooth.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA0181B72F5006C06DE /* bluetooth.png */; };
+		15279AA6181B72F5006C06DE /* download.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA1181B72F5006C06DE /* download.png */; };
+		15279AA7181B72F5006C06DE /* file.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA2181B72F5006C06DE /* file.png */; };
 		B55CC86C181B544E003F5CB2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B55CC86B181B544E003F5CB2 /* Foundation.framework */; };
 		B55CC86E181B544E003F5CB2 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B55CC86D181B544E003F5CB2 /* CoreGraphics.framework */; };
 		B55CC870181B544E003F5CB2 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B55CC86F181B544E003F5CB2 /* UIKit.framework */; };
@@ -61,6 +66,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		15279A9E181B72F5006C06DE /* 40.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 40.png; sourceTree = "<group>"; };
+		15279A9F181B72F5006C06DE /* block.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = block.png; sourceTree = "<group>"; };
+		15279AA0181B72F5006C06DE /* bluetooth.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bluetooth.png; sourceTree = "<group>"; };
+		15279AA1181B72F5006C06DE /* download.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = download.png; sourceTree = "<group>"; };
+		15279AA2181B72F5006C06DE /* file.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = file.png; sourceTree = "<group>"; };
 		B55CC868181B544D003F5CB2 /* EINumbers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EINumbers.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B55CC86B181B544E003F5CB2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		B55CC86D181B544E003F5CB2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -262,6 +272,11 @@
 		B55CC89E181B54D7003F5CB2 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				15279A9E181B72F5006C06DE /* 40.png */,
+				15279A9F181B72F5006C06DE /* block.png */,
+				15279AA0181B72F5006C06DE /* bluetooth.png */,
+				15279AA1181B72F5006C06DE /* download.png */,
+				15279AA2181B72F5006C06DE /* file.png */,
 				B5A21D97181B6C49002F4E2D /* 57.png */,
 				B5A21D98181B6C49002F4E2D /* 114.png */,
 			);
@@ -501,10 +516,15 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				15279AA3181B72F5006C06DE /* 40.png in Resources */,
+				15279AA5181B72F5006C06DE /* bluetooth.png in Resources */,
+				15279AA7181B72F5006C06DE /* file.png in Resources */,
 				B5A21D9A181B6C49002F4E2D /* 114.png in Resources */,
 				B55CC876181B544E003F5CB2 /* InfoPlist.strings in Resources */,
 				B5A21D99181B6C49002F4E2D /* 57.png in Resources */,
 				B5A21D9C181B6D4C002F4E2D /* EIQuickNavPosition.plist in Resources */,
+				15279AA4181B72F5006C06DE /* block.png in Resources */,
+				15279AA6181B72F5006C06DE /* download.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
