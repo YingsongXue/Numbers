@@ -36,14 +36,11 @@
     
     EIQuickNavView *navView = [EIQuickNavView defaultButtonBoard];
     //    board.boardImage = [UIImage imageNamed:@"button3.png"];
-    navView.buttonNumber = 3;
+//    navView.buttonNumber = 3;
     NSArray *imgArray = [NSArray arrayWithObjects:[UIImage imageNamed:@"button1.png"],
                          [UIImage imageNamed:@"button2.png"],
                          [UIImage imageNamed:@"button3.png"],nil];
     navView.buttonImageArray = imgArray;
-    if (!navView.running) {
-        [navView startRunning];
-    }
     
     [self.window makeKeyAndVisible];
     

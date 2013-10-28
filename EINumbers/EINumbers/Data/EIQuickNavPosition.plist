@@ -1,5 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict/>
+<dict>
+	<key>NavPos</key>
+	<dict>
+		<key>6</key>
+		<array/>
+		<key>5</key>
+		<array/>
+		<key>4</key>
+		<array>
+			<string>{34, 43}</string>
+			<string>{34, 43}</string>
+			<string>{34, 43}</string>
+			<string>{34, 43}</string>
+		</array>
+	</dict>
+	<key>NavList</key>
+	<array/>
+	<key>UserNavDefault</key>
+	<array>
+		<integer>0</integer>
+		<integer>1</integer>
+		<integer>2</integer>
+		<integer>3</integer>
+		<integer>4</integer>
+	</array>
+</dict>
 </plist>

@@ -2,58 +2,70 @@
 //  SUNButtonBoard.m
 //  ButtonBoardTest
 //
-//  Created by 孙 化育 on 13-8-28.
-//  Copyright (c) 2013年 孙 化育. All rights reserved.
+//  Created by 薛 迎松 on 13-8-28.
+//  Copyright (c) 2013年 薛 迎松. All rights reserved.
 //
 
 #import "EIQuickNavView.h"
 
-#define POST_NOTIFICATION(X) [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:X object:nil]];
+#define POST_NOTIFICATION(name,obj) [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:name object:obj]];
 
 #define TRY_TO_PERFORM(X) if ([_delegate respondsToSelector:@selector(X)]) {[_delegate X];}
+NSString *const SUNButtonBoardWillOpenNotification = @"SUNButtonBoardWillOpenNotification";
+NSString *const SUNButtonBoardDidOpenNotification = @"SUNButtonBoardDidOpenNotification";
+NSString *const SUNButtonBoardWillCloseNotification = @"SUNButtonBoardWillCloseNotification";
+NSString *const SUNButtonBoarDidCloseNotification = @"SUNButtonBoarDidCloseNotification";
+NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClickNotification";
 
 static EIQuickNavView *__board = nil;
 
-NSString *const SUNButtonBoardWillOpenNotification = @"SUNButtonBoardWillOpenNotification";
-
-NSString *const SUNButtonBoardDidOpenNotification = @"SUNButtonBoardDidOpenNotification";
-
-NSString *const SUNButtonBoardWillCloseNotification = @"SUNButtonBoardWillCloseNotification";
-
-NSString *const SUNButtonBoarDidCloseNotification = @"SUNButtonBoarDidCloseNotification";
-
-NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClickNotification";
+@interface EIBoardView : UIView
+@property (nonatomic,assign)EIQuickNavView *navViewDelegate;
+@end
 
 @interface EIQuickNavView()
-
-@property (nonatomic,assign) BOOL  animating;
 @property (nonatomic,assign) BOOL  movedWithKeyboard;
 @property (nonatomic,retain) NSTimer *timer;
-@property (nonatomic,assign) BOOL  isTrans;
-@property (nonatomic,assign) BOOL m_bTransform;
+
+@property (nonatomic,retain)EIBoardView *boardView;
+@property (nonatomic,retain)UIImageView *boardImageView;
+
+@property (nonatomic,assign,getter = isOpening)BOOL opening;
+@property (nonatomic,assign,getter = isAnimating) BOOL  animating;
+@property (nonatomic,assign,getter = isShaking) BOOL shaking;
+@property (nonatomic,assign) CGRect boardButtonRect;
 
 @end
 
-
 @implementation EIQuickNavView
-@synthesize running = _running;
-@synthesize animating = _animating;
 @synthesize movedWithKeyboard = _movedWithKeyboard;
 @synthesize timer = _timer;
-@synthesize isTrans = _isTrans;
-@synthesize m_bTransform = _m_bTransform;
 
-- (void)dealloc{
-    self.buttonImageArray = nil;
-    self.buttonTitleArray = nil;
-    [_buttonArray release];
-    [_timer release];
+@synthesize boardView = _boardView;
+@synthesize boardImageView = _boardImageView;
+
+@synthesize opening = _opening;
+@synthesize animating = _animating;
+@synthesize shaking = _shaking;
+@synthesize boardButtonRect = _boardButtonRect;
+
+- (void)dealloc
+{
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
+    [_buttonArray release];
+    [_buttonImageArray release];
+    [_buttonTitleArray release];
+    [_timer release];
+    
+    [_boardView release];
+    [_boardImageView release];
+    
     [super dealloc];
 }
 
-+ (EIQuickNavView *)defaultButtonBoard{
-    
++ (EIQuickNavView *)defaultButtonBoard
+{
     static dispatch_once_t predicate;
     dispatch_once(&predicate, ^{
         __board = [[EIQuickNavView alloc] init];
@@ -64,40 +76,38 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
 - (id)init{
     self = [super init];
     if (self) {
+        
         self.autoPosition = YES;
-        _boardSize = 50;
-        _boardWindow = [[UIWindow alloc] initWithFrame:CGRectMake(0, 30, 50, 50)];
-        _boardWindow.backgroundColor = [UIColor clearColor];
-        _boardWindow.windowLevel = 3000;
-        _boardWindow.clipsToBounds = NO;
+        self.boardSize = 50;
         
-        [_boardWindow makeKeyAndVisible];
-        _boardWindow.hidden = YES;
+        EIBoardView *boardView = [[EIBoardView alloc] initWithFrame:CGRectMake(0, 30, 50, 50)];
+        boardView.navViewDelegate = self;
+        boardView.backgroundColor = [UIColor clearColor];
+        boardView.autoresizingMask = UIViewAutoresizingNone;
+        boardView.layer.cornerRadius = 10;//设置圆角的大小
+        boardView.layer.backgroundColor = [[UIColor blackColor] CGColor];
+        boardView.alpha = 0.8f;//设置透明
+        boardView.layer.masksToBounds = YES;
+        [self.boardWindow addSubview:boardView];
+        self.boardView = boardView;
+        [boardView release];
         
-        _boardView = [[BoardView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
-        _boardView.backgroundColor = [UIColor clearColor];
-        _boardView.selfBoard = self;
-        _boardView.backgroundImageView.frame = CGRectMake(0, 0, 50, 50);
-        _boardView.backgroundImageView.image = [UIImage imageNamed:@"40"];
-        _boardView.backgroundImageView.backgroundColor = [UIColor clearColor];
-        _boardView.autoresizingMask = UIViewAutoresizingNone;
+        UIImageView *boardImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+        boardImageView.image = [UIImage imageNamed:@"40"];
+        boardImageView.backgroundColor = [UIColor clearColor];
+        [self.boardView addSubview:boardImageView];
+        self.boardImageView = boardImageView;
+        [boardImageView release];
         
-        UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesHundel:)];
-        [_boardView addGestureRecognizer:gesture];
+        //增加手势点击手势和拖动手势
+        UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesHandle:)];
+        [self.boardView addGestureRecognizer:gesture];
         gesture.delegate = self;
         [gesture release];
         
-        UILongPressGestureRecognizer *lpgr = [[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(LongPressGestureRecognizer:)] autorelease];
-        [_boardView addGestureRecognizer:lpgr];
-        
-        UITapGestureRecognizer *tapGestureTel2 = [[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(TwoPressGestureRecognizer:)]autorelease];
-        [tapGestureTel2 setNumberOfTapsRequired:2];
-        [tapGestureTel2 setNumberOfTouchesRequired:1];
-        [_boardView addGestureRecognizer:tapGestureTel2];
-        
-        _boardView.userInteractionEnabled = YES;
-        [_boardWindow addSubview:_boardView];
-        [_boardView release];
+        UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(homePanGestureHandle:)];
+        [self.boardView addGestureRecognizer:panGesture];
+        [panGesture release];
         
         _buttonArray = [[NSMutableArray alloc] init];
         
@@ -107,90 +117,276 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
     return self;
 }
 
-- (void)startRunning{
-    if (_running) {
-        return;
-    }
-    _boardWindow.hidden = NO;
-    _running = YES;
+#pragma mark Setter And Getter
+
+- (UIWindow *)boardWindow
+{
+    return [[UIApplication sharedApplication] keyWindow];
 }
 
-- (void)stopRunning{
-    if (!_running) {
-        return;
-    }
-    
-    _boardWindow.hidden = YES;
-    _running = NO;
-}
-
-- (void)setBoardImage:(UIImage *)boardImage{
-    _boardView.backgroundImageView.image = boardImage;
-}
-
-- (UIImage *)boardImage{
-    return _boardView.backgroundImageView.image;
-}
-
-- (void)setBoardSize:(float)boardSize{
-    if (_isOpen) {
-        return;
-    }
-    _boardSize = boardSize;
-    _boardWindow.frame = CGRectMake(_boardWindow.frame.origin.x,
-                                    _boardWindow.frame.origin.y,
-                                    boardSize,
-                                    boardSize);
-    _boardView.frame = CGRectMake(_boardView.frame.origin.x,
-                                  _boardView.frame.origin.y,
-                                  boardSize,
-                                  boardSize);
-}
-
-- (CGRect)currentFrame{
-    if (_isOpen) {
-        return _boardView.frame;
-    }else{
-        return _boardWindow.frame;
-    }
-    
+- (CGRect)currentFrame
+{
+    return self.boardView.frame;
 }
 
 - (void)setBoardPosition:(CGPoint)point animate:(BOOL)animate{
-    if (_isOpen) {
-        return;
+    if (!self.isOpening)
+    {
+        if (animate)
+        {
+            [UIView animateWithDuration:0.3 animations:^{
+                self.boardView.center = point;
+            }];
+        }
+        else
+        {
+            self.boardView.center = point;
+        }
     }
-    if (animate) {
-        [UIView animateWithDuration:0.3 animations:^{
-            _boardWindow.center = point;
-        }];
-    }else{
-        _boardWindow.center = point;
+}
+
+- (void)setBoardViewTransTrue
+{
+    self.boardView.alpha = 0.5;
+}
+
+- (void)setBoardViewTrans
+{
+    if ([self.timer isValid])
+    {
+        [self.timer invalidate];
     }
+    self.timer = [NSTimer scheduledTimerWithTimeInterval:2
+                                                  target:self
+                                                selector:@selector(setBoardViewTransTrue)
+                                                userInfo:nil
+                                                 repeats:NO];
+}
+
+- (void)cancelTimer
+{
+    if ([self.timer isValid]) {
+        [self.timer invalidate];
+    }
+    _boardView.alpha = 0.8;
 }
 
 
 #pragma mark- gesture
-- (void)tapGesHundel:(UITapGestureRecognizer *)gesture{
-    if (_animating) {
-        return;
+
+- (int)directByPoint:(CGPoint)point{
+    int dir = INT_MAX;
+    int min = INT_MAX;
+    if (abs(point.x - 0)<min) {
+        min = abs(point.x - 0);
+        dir = 3;
     }
-    if (!_isOpen) {
-        [self boardOpen];
-    }else{
-        [self boardClose];
+    if (abs([[UIScreen mainScreen] bounds].size.width - point.x)<min) {
+        min = abs([[UIScreen mainScreen] bounds].size.width - point.x);
+        dir = 1;
+    }
+    if (abs(point.y - 0)<min) {
+        min = abs(point.y - 0);
+        dir = 0;
+    }
+    if (abs([[UIScreen mainScreen] bounds].size.height - point.y)<min) {
+        min = abs([[UIScreen mainScreen] bounds].size.width - point.x);
+        dir = 2;
+    }
+    
+    return dir;
+}
+//适配位置所用的
+- (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
+{
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        UIView *piece = gestureRecognizer.view;
+        CGPoint locationInView = [gestureRecognizer locationInView:piece];
+        CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview];
+        
+        piece.layer.anchorPoint = CGPointMake(locationInView.x / piece.bounds.size.width, locationInView.y / piece.bounds.size.height);
+        piece.center = locationInSuperview;
     }
 }
 
-- (void)windowTaped:(UITapGestureRecognizer *)gesture{
-    if (_animating) {
-        return;
-    }else{
-        
+//这个是给boardView的点击事件加的，只会在那里调用
+- (void)tapGesHandle:(UITapGestureRecognizer *)gesture
+{
+    if (!self.isAnimating)
+    {
+        if (self.isOpening)
+        {
+            [self boardClose];
+        }else
+        {
+            [self boardOpen];
+        }
     }
-    
-    if (_isOpen) {
-        [self boardClose];
+}
+
+//这个是背景window的点击事件手势
+- (void)windowTaped:(UITapGestureRecognizer *)gesture
+{
+    if ( !self.isAnimating)
+    {
+        if (self.isOpening && !self.isShaking)
+        {
+            [self boardClose];
+        }
+        else if(self.isShaking)
+        {
+            self.shaking = NO;
+            [self EndWobble];
+        }
+    }
+}
+
+//这个是打开之后的手势，所有只对打开之后有效
+- (void)panGestureHandle:(UIPanGestureRecognizer *)gestureRecognizer
+{
+    if(self.isOpening && self.isShaking)
+    {
+        UIView *piece = [gestureRecognizer view];
+        [self.boardView bringSubviewToFront:piece];
+        
+        [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
+        
+        if ([gestureRecognizer state] == UIGestureRecognizerStateBegan ||
+            [gestureRecognizer state] == UIGestureRecognizerStateChanged ||
+            [gestureRecognizer state] == UIGestureRecognizerStateEnded)
+        {
+            CGPoint translation = [gestureRecognizer translationInView:[piece superview]];
+            CGPoint newPoint = CGPointMake([piece center].x + translation.x, [piece center].y + translation.y);
+            
+            [piece setCenter:newPoint];
+            [gestureRecognizer setTranslation:CGPointZero inView:[piece superview]];
+        }
+        
+        if([gestureRecognizer state] == UIGestureRecognizerStateEnded)
+        {
+//#warning This place still require to be finish,需要修改自动排序的算法在这里
+            
+            //还需要增加越界检测
+            CGSize totalSize = self.boardView.bounds.size;
+            CGSize pieceSize = piece.bounds.size;
+            CGPoint orginCenter = piece.center;
+            if(orginCenter.x<0)
+            {
+                piece.center = CGPointMake(pieceSize.width * .5f, orginCenter.y);
+            }
+            else if(orginCenter.x > totalSize.width)
+            {
+                piece.center = CGPointMake(totalSize.width - pieceSize.width * .5f, orginCenter.y);
+            }
+            
+            if(orginCenter.y<0)
+            {
+                piece.center = CGPointMake(orginCenter.x, pieceSize.height * .5f);
+            }
+            else if(orginCenter.y > totalSize.height)
+            {
+                piece.center = CGPointMake(orginCenter.x, totalSize.height - pieceSize.height * .5f);
+            }
+        }
+    }
+}
+
+//这个是关闭之后的才有效
+- (void)homePanGestureHandle:(UIPanGestureRecognizer *)gestureRecognizer
+{
+    if(!self.isOpening)
+    {
+        UIView *piece = self.boardView;
+        
+        if ([gestureRecognizer state] == UIGestureRecognizerStateBegan ||
+            [gestureRecognizer state] == UIGestureRecognizerStateChanged ||
+            [gestureRecognizer state] == UIGestureRecognizerStateEnded)
+        {
+            CGPoint translation = [gestureRecognizer translationInView:[piece superview]];
+            
+            [piece setCenter:CGPointMake([piece center].x + translation.x, [piece center].y + translation.y)];
+            [gestureRecognizer setTranslation:CGPointZero inView:[piece superview]];
+        }
+        
+        if([gestureRecognizer state] == UIGestureRecognizerStateBegan)
+        {
+            [self cancelTimer];
+        }
+        
+        if([gestureRecognizer state] == UIGestureRecognizerStateEnded)
+        {
+            [self setBoardViewTrans];
+            if (self.autoPosition)
+            {
+                int direction = INT16_MAX;
+                direction = [self directByPoint:piece.center];
+                
+                CGRect frame = piece.frame;
+                CGRect newRect;
+                
+                switch (direction) {
+                    case 0:
+                        newRect = CGRectMake(frame.origin.x,
+                                             0,
+                                             frame.size.width,
+                                             frame.size.height);
+                        break;
+                    case 1:
+                        newRect = CGRectMake([[UIScreen mainScreen] bounds].size.width - frame.size.width,
+                                             frame.origin.y,
+                                             frame.size.width,
+                                             frame.size.height);
+                        break;
+                    case 2:
+                        newRect = CGRectMake(frame.origin.x,
+                                             [[UIScreen mainScreen] bounds].size.height - frame.size.height,
+                                             frame.size.width,
+                                             frame.size.height);
+                        break;
+                    case 3:
+                        newRect = CGRectMake(0,
+                                             frame.origin.y,
+                                             frame.size.width,
+                                             frame.size.height);
+                        break;
+                        
+                    default:
+                        break;
+                }
+                
+                [UIView animateWithDuration:0.3
+                                 animations:^{
+                                     piece.frame = newRect;
+                                 }
+                                 completion:^(BOOL finished){
+                                     piece.frame = newRect;
+                                 }];
+                self.movedWithKeyboard = NO;
+            }
+        }
+    }
+}
+
+- (void)LongPressGestureRecognizer:(UIGestureRecognizer *)gr
+{
+    if(!self.isShaking)
+    {
+        self.shaking = YES;
+        
+        if (gr.state == UIGestureRecognizerStateBegan)
+        {
+            [self BeginWobble];
+        }
+    }
+}
+
+-(void)TwoPressGestureRecognizer:(UIGestureRecognizer *)gr
+{
+    if(self.isShaking)
+    {
+        self.shaking = NO;
+        
+        [self EndWobble];
     }
 }
 
@@ -199,44 +395,47 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
 
 - (void)buttonAction:(UITapGestureRecognizer *)sender
 {
-    
-    UIView *view = (UIView *)sender.view;
-    [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:SUNButtonBoarButtonClickNotification object:[NSNumber numberWithInt:view.tag-100]]];
-    
-    if ([_delegate respondsToSelector:@selector(buttonBoardClickButtonAtIndex:)]){
-        [_delegate buttonBoardClickButtonAtIndex:view.tag-100];
+    if(!self.isShaking && !self.isAnimating)
+    {
+        UIButton *button = (UIButton *)sender;
+        //    UIView *view = (UIView *)sender.view;
+        POST_NOTIFICATION(SUNButtonBoarButtonClickNotification, [NSNumber numberWithInt:button.tag-100])
+        
+        if ([self.delegate respondsToSelector:@selector(buttonBoardClickButtonAtIndex:)])
+        {
+            [self.delegate buttonBoardClickButtonAtIndex:button.tag-100];
+        }
+        
+        [self boardClose];
     }
-    
-    
-    [self boardClose];
+    else if(self.isShaking)
+    {
+        self.shaking = NO;
+        [self EndWobble];
+    }
 }
 
 #pragma mark- method
 
 - (void)boardOpen{
-    POST_NOTIFICATION(SUNButtonBoardWillOpenNotification)
+    POST_NOTIFICATION(SUNButtonBoardWillOpenNotification,nil)
     TRY_TO_PERFORM(buttonBoardWillOpen)
-    _animating = YES;
-    _boardRect = _boardWindow.frame;
-    _boardWindow.frame = [[UIScreen mainScreen] bounds];
-    _boardView.frame = _boardRect;
     
-    //    int direction = [_boardView directByPoint:_boardView.center];
+    self.animating = YES;
+    self.boardButtonRect = self.boardView.frame;
     
+    CGRect screenFrame = [[UIScreen mainScreen] bounds];
     [UIView animateWithDuration:0.3
                      animations:^{
-                         [_boardView setFrame:CGRectMake(_boardWindow.frame.size.width/2-125, _boardWindow.frame.size.height/2-100, 250 , 250)];
                          
-                         //view 设置半透明 圆角样式
-                         _boardView.layer.cornerRadius = 10;//设置圆角的大小
-                         _boardView.layer.backgroundColor = [[UIColor blackColor] CGColor];
-                         _boardView.alpha = 0.8f;//设置透明
-                         _boardView.layer.masksToBounds = YES;
-                         _boardView.backgroundImageView.image = nil;
-                         [_boardView removeGestureRecognizer:[[_boardView gestureRecognizers] lastObject]];
+                         [self.boardView setFrame:CGRectMake(screenFrame.size.width/2-125,
+                                                             screenFrame.size.height/2-100, 250 , 250)];
+                         
+                         self.boardImageView.hidden = YES;
                          
                          UITapGestureRecognizer *windowTapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowTaped:)];
-                         [_boardWindow addGestureRecognizer:windowTapGes];
+                         [self.boardWindow addGestureRecognizer:windowTapGes];
+                         [windowTapGes release];
                          
                          NSArray *imgNames = [[NSArray alloc]initWithObjects:@"download.png",@"block.png",@"bluetooth.png",@"file.png", nil];
                          NSArray *tabTitle = [[NSArray alloc]initWithObjects:@"download",@"block",@"bluetooth",@"file", nil];
@@ -268,7 +467,7 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
                              //设置每个tabView
                              UIView *tabView = [[UIView alloc] initWithFrame:rect];
                              tabView.tag = i + 100;
-                             tabView.backgroundColor = [UIColor clearColor];
+                             tabView.backgroundColor = [UIColor blueColor];
                              
                              //设置tabView的图标
                              UIButton *tabButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -281,44 +480,53 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
                              //设置标题
                              UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(5, 35, 60, 15)];
                              titleLabel.font = [UIFont systemFontOfSize:12];
-                             titleLabel.textAlignment = UITextAlignmentCenter;
+                             titleLabel.textAlignment = NSTextAlignmentCenter;
                              titleLabel.textColor = [UIColor whiteColor];
                              titleLabel.backgroundColor = [UIColor clearColor];
                              titleLabel.text = [tabTitle objectAtIndex:i];
                              [tabView addSubview:titleLabel];
                              
-                             UITapGestureRecognizer *tapAciton = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(buttonAction:)];
-                             tapAciton.numberOfTapsRequired = 1;
-                             [tabView addGestureRecognizer:tapAciton];
+                             UILongPressGestureRecognizer *longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(LongPressGestureRecognizer:)];
+                             [tabView addGestureRecognizer:longGesture];
+                             [longGesture release];
                              
-                             [windowTapGes requireGestureRecognizerToFail:tapAciton];
+                             UIPanGestureRecognizer * panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureHandle:)];
+                             [tabView addGestureRecognizer:panGesture];
+                             [panGesture release];
                              
-                             [tapAciton release];
                              
-                             [_boardView addSubview:tabView];
+                             UITapGestureRecognizer *tapGestureTel2 = [[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(TwoPressGestureRecognizer:)]autorelease];
+                             [tapGestureTel2 setNumberOfTapsRequired:2];
+                             [tapGestureTel2 setNumberOfTouchesRequired:1];
+                             [tabView addGestureRecognizer:tapGestureTel2];
+                             
+                             [self.boardView addSubview:tabView];
                              [_buttonArray addObject:tabView];
                              [tabView release];
                          }
-                         [windowTapGes release];
+                         
+                         UILongPressGestureRecognizer *longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(LongPressGestureRecognizer:)];
+                         [self.boardView addGestureRecognizer:longGesture];
+                         [longGesture release];
                      }
                      completion:^(BOOL finished) {
-                         POST_NOTIFICATION(SUNButtonBoardDidOpenNotification)
+                         POST_NOTIFICATION(SUNButtonBoardDidOpenNotification,nil)
                          TRY_TO_PERFORM(buttonBoardDidOpen)
-                         _animating = NO;
-                         _isOpen = YES;
+                         self.animating = NO;
+                         self.opening = YES;
                          [self cancelTimer];
                      }];
 }
 
 
 - (void)boardClose{
-    POST_NOTIFICATION(SUNButtonBoardWillCloseNotification)
+    POST_NOTIFICATION(SUNButtonBoardWillCloseNotification,nil)
     TRY_TO_PERFORM(buttonBoardWillClose)
-    _animating = YES;
+    self.animating = YES;
+    self.shaking = NO;
     [UIView animateWithDuration:0.3
                      animations:^{
-                         _boardWindow.frame = _boardRect;
-                         _boardView.frame = CGRectMake(0, 0, _boardSize, _boardSize);
+                         self.boardView.frame = self.boardButtonRect;
                      }
                      completion:^(BOOL finished) {
                          for (int i = 0; i<_buttonArray.count; i++){
@@ -326,55 +534,55 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
                              [tapView removeFromSuperview];
                          }
                          [_buttonArray removeAllObjects];
-                         POST_NOTIFICATION(SUNButtonBoarDidCloseNotification)
+                         POST_NOTIFICATION(SUNButtonBoarDidCloseNotification,nil)
                          TRY_TO_PERFORM(buttonBoardDidClose)
-                         _animating = NO;
-                         _isOpen = NO;
+                         self.animating = NO;
+                         self.opening = NO;
                          
-                         [_boardWindow removeGestureRecognizer:[[_boardWindow gestureRecognizers] lastObject]];
-                         UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesHundel:)];
-                         [_boardView addGestureRecognizer:gesture];
-                         gesture.delegate = self;
-                         [gesture release];
-                         
-                         _boardView.backgroundImageView.image = [UIImage imageNamed:@"40"];
+                         [self.boardWindow removeGestureRecognizer:[self.boardWindow.gestureRecognizers lastObject]];
+                         self.boardImageView.hidden = NO;
                          [self setBoardViewTrans];
                      }];
 }
 
 
-- (void)keyboardFrameWillChange:(NSNotification *)noti{
+- (void)keyboardFrameWillChange:(NSNotification *)noti
+{
     NSValue *value = [noti.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey];
     CGRect rect = [value CGRectValue];
     float yPoint = rect.origin.y;
     
+    CGRect currentFrame = [self currentFrame];
     CGRect newRect;
     
-    if (yPoint == [[UIScreen mainScreen] bounds].size.height) {
-        if (_movedWithKeyboard) {
-            newRect = CGRectMake(_boardWindow.frame.origin.x,
-                                 yPoint - _boardWindow.frame.size.height,
-                                 _boardWindow.frame.size.width,
-                                 _boardWindow.frame.size.height);
+    if (yPoint == [[UIScreen mainScreen] bounds].size.height)
+    {
+        if (self.movedWithKeyboard)
+        {
+            newRect = CGRectMake(currentFrame.origin.x,
+                                 yPoint - currentFrame.size.height,
+                                 currentFrame.size.width,
+                                 currentFrame.size.height);
             _movedWithKeyboard = NO;
             [UIView animateWithDuration:0.3
                              animations:^{
-                                 _boardWindow.frame = newRect;
+                                 self.boardView.frame = newRect;
                              }
                              completion:^(BOOL finished) {
                                  
                              }];
         }
     }else{
-        if (_boardWindow.frame.origin.y > yPoint) {
-            newRect = CGRectMake(_boardWindow.frame.origin.x,
-                                 yPoint - _boardWindow.frame.size.height,
-                                 _boardWindow.frame.size.width,
-                                 _boardWindow.frame.size.height);
+        if ([self currentFrame].origin.y > yPoint)
+        {
+            newRect = CGRectMake(currentFrame.origin.x,
+                                 yPoint - currentFrame.size.height,
+                                 currentFrame.size.width,
+                                 currentFrame.size.height);
             _movedWithKeyboard = YES;
             [UIView animateWithDuration:0.3
                              animations:^{
-                                 _boardWindow.frame = newRect;
+                                 self.boardView.frame = newRect;
                              }
                              completion:^(BOOL finished) {
                                  
@@ -384,75 +592,19 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
     
 }
 
-- (void)setBoardViewTransTrue
+-(void)BeginWobble
 {
-    _boardView.alpha = 0.5;
-}
-
-- (void)setBoardViewTrans
-{
-    //    [self performSelector:@selector(setBoardViewTransTrue) withObject:nil afterDelay:5];
-    if ([self.timer isValid]) {
-        [self.timer invalidate];
-    }
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:2
-                                                  target:self
-                                                selector:@selector(setBoardViewTransTrue)
-                                                userInfo:nil
-                                                 repeats:NO];
-}
-
-- (void)cancelTimer
-{
-    if ([self.timer isValid]) {
-        [self.timer invalidate];
-    }
-    _boardView.alpha = 0.8;
-}
-
-- (void)LongPressGestureRecognizer:(UIGestureRecognizer *)gr
-{
-    if (gr.state == UIGestureRecognizerStateBegan)
+    for (UIView *view in self.boardView.subviews)
     {
-        if (_m_bTransform)
-            return;
-        
-        for (UIView *view in _boardView.subviews)
-        {
-            view.userInteractionEnabled = YES;
-            for (UIView *v in view.subviews)
-            {
-                if ([v isMemberOfClass:[UIImageView class]])
-                    [v setHidden:NO];
-            }
-        }
-        _m_bTransform = YES;
-        [self BeginWobble];
-    }
-}
-
--(void)TwoPressGestureRecognizer:(UIGestureRecognizer *)gr
-{
-    if(_m_bTransform==NO)
-        return;
-    
-    for (UIView *view in _boardView.subviews)
-    {
-        view.userInteractionEnabled = NO;
         for (UIView *v in view.subviews)
         {
             if ([v isMemberOfClass:[UIImageView class]])
-                [v setHidden:YES];
+                [v setHidden:NO];
         }
     }
-    _m_bTransform = NO;
-    [self EndWobble];
-}
-
--(void)BeginWobble
-{
+    
     NSAutoreleasePool* pool=[NSAutoreleasePool new];
-    for (UIView *view in _boardView.subviews)
+    for (UIView *view in self.boardView.subviews)
     {
         srand([[NSDate date] timeIntervalSince1970]);
         float rand=(float)random();
@@ -473,8 +625,17 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
 
 -(void)EndWobble
 {
+    for (UIView *view in self.boardView.subviews)
+    {
+        for (UIView *v in view.subviews)
+        {
+            if ([v isMemberOfClass:[UIImageView class]])
+                [v setHidden:YES];
+        }
+    }
+    
     NSAutoreleasePool* pool=[NSAutoreleasePool new];
-    for (UIView *view in _boardView.subviews)
+    for (UIView *view in self.boardView.subviews)
     {
         [UIView animateWithDuration:0.1 delay:0 options:UIViewAnimationOptionAllowUserInteraction|UIViewAnimationOptionBeginFromCurrentState animations:^
          {
@@ -491,245 +652,21 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
 
 @end
 
-//-------------------------------------------------------------------------//
+@implementation EIBoardView
+@synthesize navViewDelegate = _navViewDelegate;
 
-@interface BoardView ()
-
-@property (nonatomic,retain) NSTimer *timer;
-
-@end
-
-@implementation BoardView
-@synthesize timer = _timer;
-
-
-- (id)initWithFrame:(CGRect)frame{
-    self = [super initWithFrame:frame];
-    if (self) {
-        _backgroundImageView = [[UIImageView alloc] init];
-        [self addSubview:_backgroundImageView];
-    }
-    
-    return self;
-}
-
-- (void)dealloc{
-    self.backgroundImageView = nil;
-    [_timer release];
-    [super dealloc];
-}
-
-- (void)setFrame:(CGRect)frame{
-    [super setFrame:frame];
-    _backgroundImageView.frame = CGRectMake(0, 0, frame.size.width, frame.size.height);
-}
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
-    if (_selfBoard.animating) {
-        return;
-    }
-    
-    UITouch *touch = [touches anyObject];
-    _beginPoint = [touch locationInView:self.window];
-    _selfBeginCenter = self.center;
-    [self cancelTimer];
-}
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
-    [self cancelTimer];
-    if (_selfBoard.animating) {
-        return;
-    }
-    if (_selfBoard.isOpen) {
-        return;
-    }
-    _moving = YES;
-    UITapGestureRecognizer *ges = [self.gestureRecognizers lastObject];
-    ges.enabled = NO;
-    UITouch *touch = [touches anyObject];
-    CGPoint point = [touch locationInView:self.window];
-    self.center = CGPointMake(_selfBeginCenter.x+(point.x - _beginPoint.x),
-                              _selfBeginCenter.y+(point.y - _beginPoint.y));
-    
-    UITouch *previousTouch = [touches anyObject];
-    CGPoint previousPoint = [previousTouch previousLocationInView:self.window];
-    
-    _direction = NSNotFound;
-    int velocity = [self velocityByPoint:point andPoint:previousPoint];
-    if (abs(velocity) > 15) {
-        int velocityX = point.x - previousPoint.x;
-        int velocityY = point.y - previousPoint.y;
-        if (abs(velocityX) > abs(velocityY)) {
-            if (velocity>0) {
-                _direction = 1;
-            }else{
-                _direction = 3;
-            }
-        }else{
-            if (velocity>0) {
-                _direction = 2;
-            }else{
-                _direction = 0;
-            }
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+    UIView *hitedView = [super hitTest:point withEvent:event];
+    if(![self pointInside:point withEvent:event])
+    {
+        if([self.navViewDelegate isOpening])
+        {
+            return self;
         }
     }
     
+    return hitedView;
 }
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
-    if (_moving) {
-        _moving = NO;
-        UITapGestureRecognizer *ges = [self.gestureRecognizers lastObject];
-        ges.enabled = YES;
-        UITouch *touch = [touches anyObject];
-        CGPoint point = [touch locationInView:self.window];
-        self.window.center = CGPointMake(self.window.center.x + (point.x - _beginPoint.x),
-                                         self.window.center.y + (point.y - _beginPoint.y));
-        self.frame = CGRectMake(0, 0, self.window.frame.size.width, self.window.frame.size.height);
-        
-        
-        if (self.selfBoard.autoPosition) {
-            int direction = INT16_MAX;
-            
-            
-            if (_direction != NSNotFound) {
-                direction = _direction;
-            }else{
-                direction = [self directByPoint:self.window.center];
-            }
-            
-            
-            
-            CGRect newRect;
-            
-            switch (direction) {
-                case 0:
-                    newRect = CGRectMake(self.window.frame.origin.x,
-                                         0,
-                                         self.window.frame.size.width,
-                                         self.window.frame.size.height);
-                    break;
-                case 1:
-                    newRect = CGRectMake([[UIScreen mainScreen] bounds].size.width - self.window.frame.size.width,
-                                         self.window.frame.origin.y,
-                                         self.window.frame.size.width,
-                                         self.window.frame.size.height);
-                    break;
-                case 2:
-                    newRect = CGRectMake(self.window.frame.origin.x,
-                                         [[UIScreen mainScreen] bounds].size.height - self.window.frame.size.height,
-                                         self.window.frame.size.width,
-                                         self.window.frame.size.height);
-                    break;
-                case 3:
-                    newRect = CGRectMake(0,
-                                         self.window.frame.origin.y,
-                                         self.window.frame.size.width,
-                                         self.window.frame.size.height);
-                    break;
-                    
-                default:
-                    break;
-            }
-            
-            [UIView animateWithDuration:0.3
-                             animations:^{
-                                 self.window.frame = newRect;
-                             }
-                             completion:^(BOOL finished) {
-                                 
-                             }];
-            self.selfBoard.movedWithKeyboard = NO;
-            [self setBoardViewTrans];
-        }
-    }
-}
-
-
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event{
-    if (_moving) {
-        _moving = NO;
-        UITapGestureRecognizer *ges = [self.gestureRecognizers lastObject];
-        ges.enabled = YES;
-        UITouch *touch = [touches anyObject];
-        CGPoint point = [touch locationInView:self.window];
-        self.window.center = CGPointMake(self.window.center.x + (point.x - _beginPoint.x),
-                                         self.window.center.y + (point.y - _beginPoint.y));
-        self.frame = CGRectMake(0, 0, self.window.frame.size.width, self.window.frame.size.height);
-    }
-}
-
-- (void)setBoardViewTransTrue
-{
-    self.alpha = 0.5;
-}
-
-- (void)setBoardViewTrans
-{
-    //    [self performSelector:@selector(setBoardViewTransTrue) withObject:nil afterDelay:5];
-    if ([self.timer isValid]) {
-        [self.timer invalidate];
-    }
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:2
-                                                  target:self
-                                                selector:@selector(setBoardViewTransTrue)
-                                                userInfo:nil
-                                                 repeats:NO];
-}
-
-- (void)cancelTimer
-{
-    if ([self.timer isValid]) {
-        [self.timer invalidate];
-    }
-    self.alpha = 0.8;
-}
-
-#pragma mark- tool
-
-- (int)directByPoint:(CGPoint)point{
-    int dir = INT_MAX;
-    int min = INT_MAX;
-    if (abs(point.x - 0)<min) {
-        min = abs(point.x - 0);
-        dir = 3;
-    }
-    if (abs([[UIScreen mainScreen] bounds].size.width - point.x)<min) {
-        min = abs([[UIScreen mainScreen] bounds].size.width - point.x);
-        dir = 1;
-    }
-    if (abs(point.y - 0)<min) {
-        min = abs(point.y - 0);
-        dir = 0;
-    }
-    if (abs([[UIScreen mainScreen] bounds].size.height - point.y)<min) {
-        min = abs([[UIScreen mainScreen] bounds].size.width - point.x);
-        dir = 2;
-    }
-    
-    return dir;
-}
-
-
-- (int)velocityByPoint:(CGPoint)point1 andPoint:(CGPoint)point2{
-    int velocityX = point1.x - point2.x;
-    int velocityY = point1.y - point2.y;
-    
-    if (abs(velocityX) > abs(velocityY)) {
-        return velocityX;
-    }else{
-        return velocityY;
-    }
-}
-
 
 @end
-
-
-
-
-
-
-
-
-
-
-
