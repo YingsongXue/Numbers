@@ -88,8 +88,10 @@ static CFTimeInterval const kMDCShineEffectDefaultDuration = 3.0;
 #pragma mark - Internal Methods
 
 - (UIImage *)imageForView {
+    UIView *view = [[[UIView alloc] initWithFrame:self.bounds] autorelease];
+    view.backgroundColor = [UIColor blackColor];
     UIGraphicsBeginImageContext(self.frame.size);
-    [self.layer renderInContext:UIGraphicsGetCurrentContext()];
+    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 
