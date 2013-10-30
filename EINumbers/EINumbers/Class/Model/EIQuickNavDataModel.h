@@ -15,8 +15,13 @@ FOUNDATION_EXTERN NSString *const kButtonIndex;
 
 //图片的列表
 //文字的列表可以作为一个数组返回给用户
-
+- (NSArray *)pictureArray;
 //用户配置的信息，应该是一个数组
+- (void)setUserNav:(NSArray *)array;
+
+- (NSArray *)defaultNav;
+
+- (NSArray *)userNav;
 
 //获取坐标位置，如果没有改变的话，建议使用原来的就可以，这个不会变的
 - (CGRect )posOfBaseForNumbers:(NSUInteger)index total:(CGSize)totalSize;

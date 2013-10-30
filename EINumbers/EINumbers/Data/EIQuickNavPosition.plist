@@ -17,14 +17,22 @@
 		</array>
 	</dict>
 	<key>NavList</key>
-	<array/>
-	<key>UserNavDefault</key>
+	<array>
+		<string>download.png</string>
+		<string>block.png</string>
+		<string>bluetooth.png</string>
+		<string>file.png</string>
+		<string>file.png</string>
+		<string>file.png</string>
+	</array>
+	<key>NavDefault</key>
 	<array>
 		<integer>0</integer>
 		<integer>1</integer>
 		<integer>2</integer>
 		<integer>3</integer>
 		<integer>4</integer>
+		<integer>5</integer>
 	</array>
 </dict>
 </plist>

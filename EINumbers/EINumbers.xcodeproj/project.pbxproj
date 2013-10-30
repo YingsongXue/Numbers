@@ -12,6 +12,7 @@
 		15279AA5181B72F5006C06DE /* bluetooth.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA0181B72F5006C06DE /* bluetooth.png */; };
 		15279AA6181B72F5006C06DE /* download.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA1181B72F5006C06DE /* download.png */; };
 		15279AA7181B72F5006C06DE /* file.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA2181B72F5006C06DE /* file.png */; };
+		B50A3D04181F38500022BB2F /* erase.png in Resources */ = {isa = PBXBuildFile; fileRef = B50A3D03181F38500022BB2F /* erase.png */; };
 		B51910F2181CFE9C00E3DD7A /* EIQuickNavDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = B51910F1181CFE9C00E3DD7A /* EIQuickNavDataModel.m */; };
 		B55CC86C181B544E003F5CB2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B55CC86B181B544E003F5CB2 /* Foundation.framework */; };
 		B55CC86E181B544E003F5CB2 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B55CC86D181B544E003F5CB2 /* CoreGraphics.framework */; };
@@ -64,6 +65,8 @@
 		B5A21D99181B6C49002F4E2D /* 57.png in Resources */ = {isa = PBXBuildFile; fileRef = B5A21D97181B6C49002F4E2D /* 57.png */; };
 		B5A21D9A181B6C49002F4E2D /* 114.png in Resources */ = {isa = PBXBuildFile; fileRef = B5A21D98181B6C49002F4E2D /* 114.png */; };
 		B5A21D9C181B6D4C002F4E2D /* EIQuickNavPosition.plist in Resources */ = {isa = PBXBuildFile; fileRef = B5A21D9B181B6D4C002F4E2D /* EIQuickNavPosition.plist */; };
+		B5D617AF18208B960084A26A /* EIAddQuickNavViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5D617AE18208B960084A26A /* EIAddQuickNavViewController.m */; };
+		B5D617B118208D750084A26A /* add.png in Resources */ = {isa = PBXBuildFile; fileRef = B5D617B018208D750084A26A /* add.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +75,7 @@
 		15279AA0181B72F5006C06DE /* bluetooth.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bluetooth.png; sourceTree = "<group>"; };
 		15279AA1181B72F5006C06DE /* download.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = download.png; sourceTree = "<group>"; };
 		15279AA2181B72F5006C06DE /* file.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = file.png; sourceTree = "<group>"; };
+		B50A3D03181F38500022BB2F /* erase.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = erase.png; sourceTree = "<group>"; };
 		B51910F0181CFE9C00E3DD7A /* EIQuickNavDataModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EIQuickNavDataModel.h; sourceTree = "<group>"; };
 		B51910F1181CFE9C00E3DD7A /* EIQuickNavDataModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EIQuickNavDataModel.m; sourceTree = "<group>"; };
 		B55CC868181B544D003F5CB2 /* EINumbers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EINumbers.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -169,6 +173,9 @@
 		B5A21D97181B6C49002F4E2D /* 57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 57.png; sourceTree = "<group>"; };
 		B5A21D98181B6C49002F4E2D /* 114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 114.png; sourceTree = "<group>"; };
 		B5A21D9B181B6D4C002F4E2D /* EIQuickNavPosition.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = EIQuickNavPosition.plist; sourceTree = "<group>"; };
+		B5D617AD18208B960084A26A /* EIAddQuickNavViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EIAddQuickNavViewController.h; sourceTree = "<group>"; };
+		B5D617AE18208B960084A26A /* EIAddQuickNavViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EIAddQuickNavViewController.m; sourceTree = "<group>"; };
+		B5D617B018208D750084A26A /* add.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = add.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -275,6 +282,8 @@
 		B55CC89E181B54D7003F5CB2 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				B5D617B018208D750084A26A /* add.png */,
+				B50A3D03181F38500022BB2F /* erase.png */,
 				15279A9E181B72F5006C06DE /* 40.png */,
 				15279A9F181B72F5006C06DE /* block.png */,
 				15279AA0181B72F5006C06DE /* bluetooth.png */,
@@ -299,6 +308,8 @@
 			children = (
 				B5A21D8E181B6AA0002F4E2D /* EIMainViewController.h */,
 				B5A21D8F181B6AA0002F4E2D /* EIMainViewController.m */,
+				B5D617AD18208B960084A26A /* EIAddQuickNavViewController.h */,
+				B5D617AE18208B960084A26A /* EIAddQuickNavViewController.m */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -523,9 +534,11 @@
 			files = (
 				15279AA3181B72F5006C06DE /* 40.png in Resources */,
 				15279AA5181B72F5006C06DE /* bluetooth.png in Resources */,
+				B50A3D04181F38500022BB2F /* erase.png in Resources */,
 				15279AA7181B72F5006C06DE /* file.png in Resources */,
 				B5A21D9A181B6C49002F4E2D /* 114.png in Resources */,
 				B55CC876181B544E003F5CB2 /* InfoPlist.strings in Resources */,
+				B5D617B118208D750084A26A /* add.png in Resources */,
 				B5A21D99181B6C49002F4E2D /* 57.png in Resources */,
 				B5A21D9C181B6D4C002F4E2D /* EIQuickNavPosition.plist in Resources */,
 				15279AA4181B72F5006C06DE /* block.png in Resources */,
@@ -542,6 +555,7 @@
 			files = (
 				B55CC8EC181B58C0003F5CB2 /* ASIFormDataRequest.m in Sources */,
 				B5A21D90181B6AA0002F4E2D /* EIMainViewController.m in Sources */,
+				B5D617AF18208B960084A26A /* EIAddQuickNavViewController.m in Sources */,
 				B55CC912181B5BAC003F5CB2 /* FMDatabase+InMemoryOnDiskIO.m in Sources */,
 				B55CC8F2181B58C0003F5CB2 /* ASICloudFilesContainer.m in Sources */,
 				B55CC8ED181B58C0003F5CB2 /* ASIHTTPRequest.m in Sources */,

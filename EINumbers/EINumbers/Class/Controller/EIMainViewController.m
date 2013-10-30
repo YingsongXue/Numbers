@@ -18,6 +18,11 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [button setTitle:@"Test Me" forState:UIControlStateNormal];
+    [button setFrame:CGRectMake(100, 100, 60, 44)];
+    [button setBackgroundColor:[UIColor greenColor]];
+    [self.view addSubview:button];
 }
 
 - (void)didReceiveMemoryWarning

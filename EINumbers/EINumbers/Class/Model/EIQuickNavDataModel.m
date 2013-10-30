@@ -8,12 +8,58 @@
 
 #import "EIQuickNavDataModel.h"
 
+#define kQuickNavKey @"QuickNavKey"
+#define kQuickNavFilePath @"EIQuickNavPosition.plist"
+#define kQuickNavPosKey @"NavPos"
+#define kQUickNavListKey @"NavList"
+#define kQuickNavDefaultKey @"NavDefault"
+
 NSString *const kButtonRect = @"kButtonRect";
 NSString *const kButtonIndex = @"kButtonIndex";
 
 static EIQuickNavDataModel *_sharedInstace = nil;
 
+@interface EIQuickNavDataModel()
+
+@property (nonatomic, retain) NSDictionary *dictionary;
+
+@end
+
 @implementation EIQuickNavDataModel
+@synthesize dictionary = _dictionary;
+
+#pragma mark Picture Array
+- (NSArray *)pictureArray
+{
+    return [self.dictionary objectForKey:kQUickNavListKey];
+}
+
+#pragma mark User Default setting
+- (void)setUserNav:(NSArray *)array
+{
+    if([array count] >=4 && [array count] <=6)
+    {
+        [[NSUserDefaults standardUserDefaults] setObject:array  forKey:kQuickNavKey];
+    }
+}
+
+- (NSArray *)defaultNav
+{
+    return [self.dictionary objectForKey:kQuickNavDefaultKey];
+}
+
+- (NSArray *)userNav
+{
+    NSArray *userNav = [[NSUserDefaults standardUserDefaults] objectForKey:kQuickNavKey];
+    if([userNav count])
+    {
+        return userNav;
+    }
+    else
+    {
+        return [self defaultNav];
+    }
+}
 
 #pragma mark Get Position Information
 - (CGFloat)boardWidthOfNumbers:(NSUInteger)index
@@ -67,10 +113,8 @@ static EIQuickNavDataModel *_sharedInstace = nil;
 {
     NSMutableArray *resultArr = [NSMutableArray arrayWithCapacity:6];
     CGFloat boradWidth = [self boardWidthOfNumbers:6];
-    for (int i=0; i<6; i++) {
-        
-        NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-        
+    for (int i=0; i<6; i++)
+    {
         CGRect rect;
         CGFloat width = boradWidth / 4;
         CGFloat height = boradWidth / 3;
@@ -103,12 +147,8 @@ static EIQuickNavDataModel *_sharedInstace = nil;
                 rect.origin.y = height + 5 + dValue;
                 break;
         }
-        [dict setValue:[NSValue valueWithCGRect:rect] forKey:@"ButtonRect"];
-        [dict setValue:[NSString stringWithFormat:@"%i",i] forKey:@"ButtonIndex"];
-        [resultArr addObject:dict];
-        [dict release];
+        [resultArr addObject:[NSValue valueWithCGRect:rect]];
     }
-    //     [_boardView setFrame:CGRectMake((_boardWindow.frame.size.width * .5f) - (boradWidth * .5f), _boardWindow.frame.size.height/2-100, boradWidth , boradWidth)];
     return resultArr;
 }
 
@@ -116,10 +156,8 @@ static EIQuickNavDataModel *_sharedInstace = nil;
 {
     NSMutableArray *resultArr = [NSMutableArray arrayWithCapacity:5];
     CGFloat boradWidth = [self boardWidthOfNumbers:5];
-    for (int i=0; i<6; i++) {
-        
-        NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-        
+    for (int i=0; i<5; i++)
+    {
         CGRect rect;
         CGFloat width = boradWidth / 3;
         CGFloat halfWidth = width * .5f;
@@ -132,7 +170,7 @@ static EIQuickNavDataModel *_sharedInstace = nil;
                 break;
             case 1:
                 rect.origin.x = (width * 2) + 5;
-                rect.origin.y = 5;
+                rect.origin.y = width + 5;
                 break;
             case 2:
                 rect.origin.x = width + halfWidth + 5;
@@ -147,12 +185,8 @@ static EIQuickNavDataModel *_sharedInstace = nil;
                 rect.origin.y = width + 5;
                 break;
         }
-        [dict setValue:[NSValue valueWithCGRect:rect] forKey:kButtonRect];
-        [dict setValue:[NSString stringWithFormat:@"%i",i] forKey:kButtonIndex];
-        [resultArr addObject:dict];
-        [dict release];
+        [resultArr addObject:[NSValue valueWithCGRect:rect]];
     }
-    //     [_boardView setFrame:CGRectMake((_boardWindow.frame.size.width * .5f) - (boradWidth * .5f), _boardWindow.frame.size.height/2-100, boradWidth , boradWidth)];
     return resultArr;
 }
 
@@ -162,7 +196,7 @@ static EIQuickNavDataModel *_sharedInstace = nil;
     CGFloat boradWidth = [self boardWidthOfNumbers:4];
     for (int i=0; i<4; i++)
     {
-        NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+//        NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
         
         CGRect rect;
         CGFloat heigth = (boradWidth - 20) / 3;
@@ -187,21 +221,30 @@ static EIQuickNavDataModel *_sharedInstace = nil;
                 rect.origin.y = 10 + heigth;
                 break;
         }
-        [dict setValue:[NSValue valueWithCGRect:rect] forKey:kButtonRect];
-        [dict setValue:[NSString stringWithFormat:@"%i",i] forKey:kButtonIndex];
-        [resultArr addObject:dict];
-        [dict release];
+//        [dict setValue:[NSValue valueWithCGRect:rect] forKey:kButtonRect];
+//        [dict setValue:[NSString stringWithFormat:@"%i",i] forKey:kButtonIndex];
+        [resultArr addObject:[NSValue valueWithCGRect:rect]];
+//        [dict release];
     }
     return resultArr;
 }
 
 #pragma mark LifeCycle
+
+- (void)dealloc
+{
+    [_dictionary release];
+    
+    [super dealloc];
+}
 - (id)init
 {
     @synchronized(self)
     {
         if(self = [super init])
         {
+            NSString *filePath  = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:kQuickNavFilePath];
+            self.dictionary = [NSDictionary dictionaryWithContentsOfFile:filePath];
         }
         return self;
     }
@@ -241,7 +284,7 @@ static EIQuickNavDataModel *_sharedInstace = nil;
     return self;
 }
 
-- (unsigned) retainCount
+- (NSUInteger) retainCount
 {
     return SIZE_MAX;
 }

@@ -7,10 +7,17 @@
 //
 
 #import "EIQuickNavView.h"
+#import "EIQuickNavDataModel.h"
+#import "EIAddQuickNavViewController.h"
 
 #define POST_NOTIFICATION(name,obj) [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:name object:obj]];
 
 #define TRY_TO_PERFORM(X) if ([_delegate respondsToSelector:@selector(X)]) {[_delegate X];}
+
+#define kSepValue 2
+#define kEraseButtonTag 4
+#define kClickButtonTag 3
+
 NSString *const SUNButtonBoardWillOpenNotification = @"SUNButtonBoardWillOpenNotification";
 NSString *const SUNButtonBoardDidOpenNotification = @"SUNButtonBoardDidOpenNotification";
 NSString *const SUNButtonBoardWillCloseNotification = @"SUNButtonBoardWillCloseNotification";
@@ -19,35 +26,99 @@ NSString *const SUNButtonBoarButtonClickNotification = @"SUNButtonBoarButtonClic
 
 static EIQuickNavView *__board = nil;
 
+#pragma mark Public Method
+float intersec(float a,float b)
+{
+    return b>a?b-a:0;
+}
+
+float intersection(CGRect r1,CGRect r2)
+{
+    float xs = MAX(r1.origin.x, r2.origin.x);
+    float xe = MIN(r1.origin.x + r1.size.width, r2.origin.x + r2.size.width);
+    float x = intersec(xs, xe);
+    float ys = MAX(r1.origin.y, r2.origin.y);
+    float ye = MIN(r1.origin.y + r1.size.height, r2.origin.y + r2.size.height);
+    float y = intersec(ys, ye);
+//    NSLog(@"%f:%f:%f;%f:%f:%f",xs,xe,x,ys,ye,y);
+    return x*y;
+}
+
+float intersectionPercert(CGRect r1,CGRect r2)
+{
+    float section = intersection(r1, r2);
+    return section / (r1.size.width * r1.size.height);
+}
+
+CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
+{
+    const CGFloat fx = pt.x;
+    const CGFloat fy = pt.y;
+    const CGFloat fcos = cos(angle);
+    const CGFloat fsin = sin(angle);
+    return CGAffineTransformMake(fcos, fsin, -fsin, fcos, fx - fx * fcos + fy * fsin, fy - fx * fsin - fy * fcos);
+}
+
 @interface EIBoardView : UIView
 @property (nonatomic,assign)EIQuickNavView *navViewDelegate;
 @end
 
+@interface EIAddButtonItem : NSObject
+@property (nonatomic,retain)NSString *picture;
+@property (nonatomic,assign,getter = isSelected)BOOL selected;
+@end
+
+@implementation EIAddButtonItem
+
+@synthesize picture = _picture;
+@synthesize selected = _selected;
+- (BOOL)isSelected
+{
+    return _selected;
+}
+
+@end
+
 @interface EIQuickNavView()
+    <UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic,assign) BOOL  movedWithKeyboard;
 @property (nonatomic,retain) NSTimer *timer;
-
+@property (nonatomic,retain) NSArray *posArray;
+@property (nonatomic,retain) NSMutableArray *userArray;
 @property (nonatomic,retain)EIBoardView *boardView;
 @property (nonatomic,retain)UIImageView *boardImageView;
+@property (nonatomic,retain) UIView *addBgView;
+@property (nonatomic,retain) NSMutableArray *addPictureArray;
+
+@property (nonatomic,retain) UIGestureRecognizer *tapGesture;
+@property (nonatomic,retain) UIGestureRecognizer *panGesture;
 
 @property (nonatomic,assign,getter = isOpening)BOOL opening;
 @property (nonatomic,assign,getter = isAnimating) BOOL  animating;
 @property (nonatomic,assign,getter = isShaking) BOOL shaking;
+@property (nonatomic,assign,getter = isAdding) BOOL adding;
 @property (nonatomic,assign) CGRect boardButtonRect;
+@property (nonatomic,assign) CGPoint orginalPoint;
 
 @end
 
 @implementation EIQuickNavView
 @synthesize movedWithKeyboard = _movedWithKeyboard;
 @synthesize timer = _timer;
-
+@synthesize posArray = _posArray;
 @synthesize boardView = _boardView;
 @synthesize boardImageView = _boardImageView;
+@synthesize addBgView = _addBgView;
+@synthesize addPictureArray = _addPictureArray;
+
+@synthesize tapGesture = _tapGesture;
+@synthesize panGesture = _panGesture;
 
 @synthesize opening = _opening;
 @synthesize animating = _animating;
 @synthesize shaking = _shaking;
 @synthesize boardButtonRect = _boardButtonRect;
+@synthesize orginalPoint = _orginalPoint;
 
 - (void)dealloc
 {
@@ -60,6 +131,11 @@ static EIQuickNavView *__board = nil;
     
     [_boardView release];
     [_boardImageView release];
+    [_addBgView release];
+    [_addPictureArray release];
+    
+    [_tapGesture release];
+    [_panGesture release];
     
     [super dealloc];
 }
@@ -80,16 +156,11 @@ static EIQuickNavView *__board = nil;
         self.autoPosition = YES;
         self.boardSize = 50;
         
-        EIBoardView *boardView = [[EIBoardView alloc] initWithFrame:CGRectMake(0, 30, 50, 50)];
+        EIBoardView *boardView = [[EIBoardView alloc] initWithFrame:CGRectMake(kSepValue, 30, 50, 50)];
         boardView.navViewDelegate = self;
-        boardView.backgroundColor = [UIColor clearColor];
-        boardView.autoresizingMask = UIViewAutoresizingNone;
-        boardView.layer.cornerRadius = 10;//设置圆角的大小
-        boardView.layer.backgroundColor = [[UIColor blackColor] CGColor];
-        boardView.alpha = 0.8f;//设置透明
-        boardView.layer.masksToBounds = YES;
         [self.boardWindow addSubview:boardView];
         self.boardView = boardView;
+        [self initialBoardView];
         [boardView release];
         
         UIImageView *boardImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
@@ -98,16 +169,6 @@ static EIQuickNavView *__board = nil;
         [self.boardView addSubview:boardImageView];
         self.boardImageView = boardImageView;
         [boardImageView release];
-        
-        //增加手势点击手势和拖动手势
-        UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesHandle:)];
-        [self.boardView addGestureRecognizer:gesture];
-        gesture.delegate = self;
-        [gesture release];
-        
-        UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(homePanGestureHandle:)];
-        [self.boardView addGestureRecognizer:panGesture];
-        [panGesture release];
         
         _buttonArray = [[NSMutableArray alloc] init];
         
@@ -118,6 +179,71 @@ static EIQuickNavView *__board = nil;
 }
 
 #pragma mark Setter And Getter
+- (void)initialBoardView
+{
+    self.boardView.backgroundColor = [UIColor clearColor];
+    self.boardView.autoresizingMask = UIViewAutoresizingNone;
+    self.boardView.layer.cornerRadius = 10;//设置圆角的大小
+    self.boardView.layer.backgroundColor = [[UIColor blackColor] CGColor];
+    self.boardView.alpha = 0.8f;//设置透明
+    self.boardView.layer.masksToBounds = YES;
+    
+    //增加手势点击手势和拖动手势
+    UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesHandle:)];
+    [self.boardView addGestureRecognizer:gesture];
+    gesture.delegate = self;
+    self.tapGesture = gesture;
+    [gesture release];
+    
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(homePanGestureHandle:)];
+    [self.boardView addGestureRecognizer:panGesture];
+    self.panGesture = panGesture;
+    [panGesture release];
+}
+
+- (void)cleanBoardView
+{
+    self.boardView.backgroundColor = [UIColor clearColor];
+    self.boardView.autoresizingMask = UIViewAutoresizingNone;
+    self.boardView.layer.cornerRadius = 0;//设置圆角的大小
+    self.boardView.layer.backgroundColor = [[UIColor clearColor] CGColor];
+    self.boardView.alpha = 1.0f;//设置透明
+    self.boardView.layer.masksToBounds = NO;
+    
+    [self.boardView removeGestureRecognizer:self.tapGesture];
+    self.tapGesture = nil;
+    [self.boardView removeGestureRecognizer:self.panGesture];
+    self.panGesture = nil;
+}
+
+- (void)initialAddBgView
+{
+    CGRect frame = [[UIScreen mainScreen] bounds];
+    
+    [self removeAllViews];
+    
+    self.boardView.frame = frame;
+    
+    UIView *view = [[UIView alloc] initWithFrame:self.boardView.frame];
+    self.addBgView = view;
+    [self.boardView addSubview:view];
+    [view release];
+    
+    UITableView *tableView = [[UITableView alloc] initWithFrame:self.boardView.frame style:UITableViewStyleGrouped];
+    tableView.delegate = self;
+    tableView.dataSource = self;
+    [self.addBgView addSubview:tableView];
+    [tableView release];
+    
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [button setFrame:CGRectMake(frame.size.width * 0.5f,frame.size.height - 50, 80, 44)];
+    button.tag = 1000;
+    [button setTitle:@"New way" forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(endAddNewButton) forControlEvents:UIControlEventTouchUpInside];
+    [self.addBgView addSubview:button];
+    
+    [self cleanBoardView];
+}
 
 - (UIWindow *)boardWindow
 {
@@ -147,7 +273,9 @@ static EIQuickNavView *__board = nil;
 
 - (void)setBoardViewTransTrue
 {
-    self.boardView.alpha = 0.5;
+    [UIView animateWithDuration:0.2 animations:^{
+        self.boardView.alpha = 0.5;
+    }];
 }
 
 - (void)setBoardViewTrans
@@ -168,7 +296,71 @@ static EIQuickNavView *__board = nil;
     if ([self.timer isValid]) {
         [self.timer invalidate];
     }
-    _boardView.alpha = 0.8;
+    [UIView animateWithDuration:0.2 animations:^{
+        self.boardView.alpha = 0.8;
+    }];
+}
+
+#pragma mark TableView
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.addPictureArray count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 66.0f;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *CellIdentifier = @"Cell";
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
+		
+		cell.textLabel.numberOfLines = 2;
+        cell.backgroundColor = [UIColor  clearColor];
+        cell.textLabel.font = [UIFont systemFontOfSize:19];
+    }
+    
+    EIAddButtonItem *item = [self.addPictureArray objectAtIndex:[indexPath row]];
+    cell.imageView.image = [UIImage imageNamed:item.picture];
+    cell.textLabel.text = item.picture;
+    if(item.isSelected)
+    {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
+    else
+    {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    int count = 0;
+    for (int i = 0; i < [self.addPictureArray count]; i++)
+    {
+        EIAddButtonItem *item = [self.addPictureArray objectAtIndex:i];
+        if(item.isSelected)
+        {
+            count++;
+        }
+    }
+    EIAddButtonItem *item = [self.addPictureArray objectAtIndex:[indexPath row]];
+    if((count <6 && !item.isSelected) ||
+       (count > 4 && item.isSelected))
+    {
+        item.selected = !item.isSelected;
+    }
+    [tableView reloadData];
 }
 
 
@@ -214,6 +406,10 @@ static EIQuickNavView *__board = nil;
 {
     if (!self.isAnimating)
     {
+        if(self.isAdding)
+        {
+            return;
+        }
         if (self.isOpening)
         {
             [self boardClose];
@@ -229,14 +425,17 @@ static EIQuickNavView *__board = nil;
 {
     if ( !self.isAnimating)
     {
+        if(self.isAdding)
+        {
+            return;
+        }
         if (self.isOpening && !self.isShaking)
         {
             [self boardClose];
         }
         else if(self.isShaking)
         {
-            self.shaking = NO;
-            [self EndWobble];
+            [self endEdit];
         }
     }
 }
@@ -244,12 +443,24 @@ static EIQuickNavView *__board = nil;
 //这个是打开之后的手势，所有只对打开之后有效
 - (void)panGestureHandle:(UIPanGestureRecognizer *)gestureRecognizer
 {
+    if(self.isAdding)
+    {
+        return;
+    }
     if(self.isOpening && self.isShaking)
     {
         UIView *piece = [gestureRecognizer view];
         [self.boardView bringSubviewToFront:piece];
         
         [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
+        
+        if([gestureRecognizer state] == UIGestureRecognizerStateBegan)
+        {
+            [self shaking:piece isShake:NO];
+            UIView *button = [piece viewWithTag:kClickButtonTag];
+            CGRect frame = button.frame;
+            button.frame = CGRectMake(frame.origin.x, frame.origin.y, frame.size.width * 1.4, frame.size.height * 1.4);
+        }
         
         if ([gestureRecognizer state] == UIGestureRecognizerStateBegan ||
             [gestureRecognizer state] == UIGestureRecognizerStateChanged ||
@@ -260,12 +471,70 @@ static EIQuickNavView *__board = nil;
             
             [piece setCenter:newPoint];
             [gestureRecognizer setTranslation:CGPointZero inView:[piece superview]];
+            
+            CGRect cRect = piece.frame;
+            int currentIndex = (int)[_buttonArray indexOfObject:piece];//(int)piece.tag - 100;
+            int intersectIndex = -1;
+            int total = (int)[self.userArray count];
+            for (int i = 0; i < [self.posArray count]; i++)
+            {
+                CGRect rect = [[self.posArray objectAtIndex:i] CGRectValue];
+                if(intersectionPercert(cRect,rect)>0.4)
+                {
+                    if(i != currentIndex)
+                    {
+                        intersectIndex = i;
+                        int sub = 0;
+                        int add = 0;
+                        if(currentIndex > intersectIndex)
+                        {
+                            sub = currentIndex - intersectIndex;
+                            add = intersectIndex + total - currentIndex;
+                        }
+                        else
+                        {
+                            add = intersectIndex - currentIndex;
+                            sub = currentIndex + total - intersectIndex;
+                        }
+                        __block NSMutableArray *weakUserArray = self.userArray;
+                        __block NSMutableArray *weakButtonArray = _buttonArray;
+                        __block NSArray *weakPosArray = self.posArray;
+                        [UIView animateWithDuration:0.3 animations:^{
+                            if(add < sub)
+                            {
+                                for (int i = currentIndex; i != intersectIndex; i=(i+1)%total)
+                                {
+                                    
+                                    [weakUserArray exchangeObjectAtIndex:i withObjectAtIndex:(i+1)%total];
+                                    [weakButtonArray exchangeObjectAtIndex:i withObjectAtIndex:(i+1)%total];
+                                    UIView *view = [weakButtonArray objectAtIndex:i];
+                                    view.frame = [[weakPosArray objectAtIndex:i] CGRectValue];
+                                }
+                            }
+                            else
+                            {
+                                for (int i = currentIndex; i != intersectIndex; )
+                                {
+                                    int next = i>0?(i-1):(total-1);
+                                    [weakUserArray exchangeObjectAtIndex:i withObjectAtIndex:next];
+                                    [weakButtonArray exchangeObjectAtIndex:i withObjectAtIndex:next];
+                                    UIView *view = [weakButtonArray objectAtIndex:i];
+                                    view.frame = [[weakPosArray objectAtIndex:i] CGRectValue];
+                                    
+                                    i = next;
+                                }
+                            }
+                        }];
+
+                    }
+                }
+            }
         }
         
-        if([gestureRecognizer state] == UIGestureRecognizerStateEnded)
+        if([gestureRecognizer state] == UIGestureRecognizerStateEnded ||
+           [gestureRecognizer state] == UIGestureRecognizerStateCancelled)
         {
-//#warning This place still require to be finish,需要修改自动排序的算法在这里
-            
+            [self shaking:piece isShake:YES];
             //还需要增加越界检测
             CGSize totalSize = self.boardView.bounds.size;
             CGSize pieceSize = piece.bounds.size;
@@ -287,6 +556,10 @@ static EIQuickNavView *__board = nil;
             {
                 piece.center = CGPointMake(orginCenter.x, totalSize.height - pieceSize.height * .5f);
             }
+            
+            [UIView animateWithDuration:0.3 animations:^{
+                [self resizeFrame];
+            }];
         }
     }
 }
@@ -327,24 +600,24 @@ static EIQuickNavView *__board = nil;
                 switch (direction) {
                     case 0:
                         newRect = CGRectMake(frame.origin.x,
-                                             0,
+                                             kSepValue,
                                              frame.size.width,
                                              frame.size.height);
                         break;
                     case 1:
-                        newRect = CGRectMake([[UIScreen mainScreen] bounds].size.width - frame.size.width,
+                        newRect = CGRectMake([[UIScreen mainScreen] bounds].size.width - frame.size.width-kSepValue,
                                              frame.origin.y,
                                              frame.size.width,
                                              frame.size.height);
                         break;
                     case 2:
                         newRect = CGRectMake(frame.origin.x,
-                                             [[UIScreen mainScreen] bounds].size.height - frame.size.height,
+                                             [[UIScreen mainScreen] bounds].size.height - frame.size.height-kSepValue,
                                              frame.size.width,
                                              frame.size.height);
                         break;
                     case 3:
-                        newRect = CGRectMake(0,
+                        newRect = CGRectMake(kSepValue,
                                              frame.origin.y,
                                              frame.size.width,
                                              frame.size.height);
@@ -354,7 +627,7 @@ static EIQuickNavView *__board = nil;
                         break;
                 }
                 
-                [UIView animateWithDuration:0.3
+                [UIView animateWithDuration:0.2
                                  animations:^{
                                      piece.frame = newRect;
                                  }
@@ -369,53 +642,302 @@ static EIQuickNavView *__board = nil;
 
 - (void)LongPressGestureRecognizer:(UIGestureRecognizer *)gr
 {
+//    CGRect f = [gr view].frame;
+//    NSLog(@"{[%f,%f],[%f,%f]}",f.origin.x,f.origin.y,f.size.width,f.size.height);
+//    CGPoint translation = [gr translationInView:[[gr view] superview]];
+//    
+//    CGPoint newPoint = CGPointMake([ center].x + translation.x, [piece center].y + translation.y);
+    
     if(!self.isShaking)
     {
         self.shaking = YES;
         
         if (gr.state == UIGestureRecognizerStateBegan)
         {
-            [self BeginWobble];
+            [self startEdit];
         }
     }
 }
 
 -(void)TwoPressGestureRecognizer:(UIGestureRecognizer *)gr
 {
-    if(self.isShaking)
+    if(self.isShaking && !self.isAdding)
     {
-        self.shaking = NO;
-        
-        [self EndWobble];
+        [self endEdit];
     }
 }
 
 
 #pragma mark- button
 
-- (void)buttonAction:(UITapGestureRecognizer *)sender
+- (void)buttonAction:(UIButton *)sender
 {
+    if(self.isAdding)
+    {
+        return;
+    }
     if(!self.isShaking && !self.isAnimating)
     {
-        UIButton *button = (UIButton *)sender;
-        //    UIView *view = (UIView *)sender.view;
-        POST_NOTIFICATION(SUNButtonBoarButtonClickNotification, [NSNumber numberWithInt:button.tag-100])
-        
+        UIView *view = [sender superview];
+        int num = (int)[_buttonArray indexOfObject:view];
+        POST_NOTIFICATION(SUNButtonBoarButtonClickNotification, [NSNumber numberWithInt:num])
+        NSLog(@"%d",num);
         if ([self.delegate respondsToSelector:@selector(buttonBoardClickButtonAtIndex:)])
         {
-            [self.delegate buttonBoardClickButtonAtIndex:button.tag-100];
+            [self.delegate buttonBoardClickButtonAtIndex:num];
         }
         
         [self boardClose];
     }
     else if(self.isShaking)
     {
-        self.shaking = NO;
-        [self EndWobble];
+        [self endEdit];
+    }
+}
+
+- (void)removeMe:(UIButton *)button
+{
+    if(self.isAdding)
+    {
+        return;
+    }
+    if([self.userArray count]>4)
+    {
+        NSUInteger index = [_buttonArray indexOfObject:[button superview] ];
+        [self.userArray removeObjectAtIndex:index];
+        [[EIQuickNavDataModel sharedInstance] setUserNav:self.userArray];
+        __block id weakSelf = self;
+        __block NSMutableArray *weakButtonArray = _buttonArray;
+        __block UIView *view = [_buttonArray objectAtIndex:index];
+        [UIView animateWithDuration:0.4 animations:^{
+            [view setFrame:CGRectZero];
+            [view removeFromSuperview];
+            [weakButtonArray removeObject:view];
+            [weakSelf resizeFrame];
+        } completion:^(BOOL finished){
+            [weakSelf resizeFrame];
+        }];
+    }
+    
+    if([self.userArray count]<=4)
+    {
+        [self setEraseHidden:YES];
+    }
+}
+
+- (void)addNewButton:(id)sender
+{
+    self.adding = YES;
+    
+    NSArray *pictureArray = [[EIQuickNavDataModel sharedInstance] pictureArray];
+    NSInteger count = [pictureArray count];
+    self.addPictureArray = [NSMutableArray arrayWithCapacity:count];
+    for (int i= 0; i <count;i++)
+    {
+        EIAddButtonItem *item = [[EIAddButtonItem alloc] init];
+        item.picture = [NSString stringWithString:[pictureArray objectAtIndex:i]];
+        item.selected = NO;
+        for (int j =0; j < [self.userArray count]; j++)
+        {
+            int s = [[self.userArray objectAtIndex:j] intValue];
+            if(s == i)
+            {
+                item.selected = YES;
+            }
+        }
+        
+        [self.addPictureArray addObject:item];
+        [item release];
+    }
+    
+    [self initialAddBgView];
+    [self.boardWindow removeGestureRecognizer:[self.boardWindow.gestureRecognizers lastObject]];
+    [self endEdit];
+    
+    CGRect frame = [[UIScreen mainScreen] bounds];
+    CGPoint center = self.addBgView.center;
+    self.addBgView.center = CGPointMake(center.x, center.y+frame.size.height);
+    __block EIQuickNavView *weakSelf = self;
+    [UIView animateWithDuration:0.3 animations:^{
+        weakSelf.addBgView.center = center;
+    }];
+}
+
+- (void)endAddNewButton
+{
+    if(self.isAdding)
+    {
+        int count = [self.addPictureArray count];
+        NSMutableArray *arr = [NSMutableArray array];
+        for (int i= 0; i <count;i++)
+        {
+            EIAddButtonItem *item = [self.addPictureArray objectAtIndex:i];
+            if(item.isSelected)
+            {
+                [arr addObject:[NSNumber numberWithInt:i]];
+            }
+        }
+        [[EIQuickNavDataModel sharedInstance] setUserNav:arr];
+        
+        
+        __block EIQuickNavView *weakSelf = self;
+        [UIView animateWithDuration:0.3 animations:^{
+            [weakSelf.addBgView removeFromSuperview];
+            weakSelf.addBgView = nil;
+            weakSelf.adding = NO;
+            [weakSelf initialBoardView];
+            [weakSelf resizeSubView];
+            [weakSelf resizeFrame];
+        }];
+        [self startEdit];
     }
 }
 
 #pragma mark- method
+- (void)resizeFrame
+{
+    EIQuickNavDataModel *model = [EIQuickNavDataModel sharedInstance];
+    self.userArray = [NSMutableArray arrayWithArray:[model userNav]];
+    NSUInteger total = [self.userArray count];
+    
+    CGSize size = [[UIScreen mainScreen] bounds].size;
+    NSArray *rectArray = [model posArrayOfNumbers:total];
+    self.posArray = [NSArray arrayWithArray:rectArray];
+    
+    CGRect boardViewFrame = [model posOfBaseForNumbers:total total:size];
+    
+    UIView *addButtonView = [self.boardView viewWithTag:99];
+    addButtonView.frame = CGRectMake((boardViewFrame.size.width-44) * .5f, (boardViewFrame.size.height-44) * .5f, 44, 44);
+    
+    for (int i =0; i < total; i++)
+    {
+        CGRect rect = [[rectArray objectAtIndex:i] CGRectValue];
+        UIView *view = (UIView *)[_buttonArray objectAtIndex:i];
+        view.alpha = 1.0f;
+        [view setFrame:rect];
+        
+        UIButton *tabButton = (UIButton *)[view viewWithTag:kClickButtonTag];
+        tabButton.frame = view.bounds;//CGRectMake((rect.size.width -30)* .5f, (rect.size.height - 30) * .5f, 30, 30);
+        
+        UIButton *eraseButton = (UIButton *)[view viewWithTag:kEraseButtonTag];
+        eraseButton.frame = CGRectMake((rect.size.width-44+16), -16, 44, 44);
+    }
+    self.boardView.frame = boardViewFrame;
+}
+
+- (void)resizeSubView
+{
+    [self removeAllViews];
+    
+    EIQuickNavDataModel *model = [EIQuickNavDataModel sharedInstance];
+    self.userArray = [NSMutableArray arrayWithArray:[model userNav]];
+    
+    NSUInteger total = [self.userArray count];
+    
+    NSArray *rectArray = [model posArrayOfNumbers:total];
+    self.posArray = [NSMutableArray arrayWithArray:rectArray];
+    
+    NSArray *pictureArray = [model pictureArray];
+    
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [button setImage:[UIImage imageNamed:@"add.png"] forState:UIControlStateNormal];
+    [button addTarget:self action:@selector(addNewButton:) forControlEvents:UIControlEventTouchUpInside];
+    button.tag = 99;
+    button.hidden = YES;
+    [self.boardView addSubview:button];
+    
+    UITapGestureRecognizer *windowTapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowTaped:)];
+    [self.boardWindow addGestureRecognizer:windowTapGes];
+    [windowTapGes release];
+    
+    for (int i =0; i < total; i++)
+    {
+        NSUInteger userIndex = [[self.userArray objectAtIndex:i] unsignedIntegerValue];
+        NSString *imageName = [pictureArray objectAtIndex:userIndex];
+        //设置每个tabView
+        UIView *tabView = [[UIView alloc] initWithFrame:CGRectZero];
+        tabView.alpha = 0.0;
+        
+        //设置tabView的图标
+        UIButton *tabButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        tabButton.tag = kClickButtonTag;
+        [tabButton setBackgroundImage:[UIImage imageNamed:imageName] forState:UIControlStateNormal];
+        [tabButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+        [tabView addSubview:tabButton];
+        
+//        UILabel *tabLabel = [[UILabel alloc] init];
+        
+        UIButton *eraseButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [eraseButton setImage:[UIImage imageNamed:@"erase.png"] forState:UIControlStateNormal];
+        eraseButton.tag = kEraseButtonTag;
+        eraseButton.hidden = YES;
+        [eraseButton addTarget:self action:@selector(removeMe:) forControlEvents:UIControlEventTouchUpInside];
+        [tabView addSubview:eraseButton];
+        
+        UILongPressGestureRecognizer *longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(LongPressGestureRecognizer:)];
+        [tabView addGestureRecognizer:longGesture];
+        [longGesture release];
+        
+        UIPanGestureRecognizer * panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureHandle:)];
+        [tabView addGestureRecognizer:panGesture];
+        [panGesture release];
+        
+        
+        UITapGestureRecognizer *tapGestureTel2 = [[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(TwoPressGestureRecognizer:)]autorelease];
+        [tapGestureTel2 setNumberOfTapsRequired:2];
+        [tapGestureTel2 setNumberOfTouchesRequired:1];
+        [tabView addGestureRecognizer:tapGestureTel2];
+        
+        [self.boardView addSubview:tabView];
+        [_buttonArray addObject:tabView];
+        [tabView release];
+    }
+}
+
+- (void)removeAllViews
+{
+    NSArray *viewArr = self.boardView.subviews;
+    for (UIView *view in viewArr)
+    {
+        if(view != self.boardImageView)
+        {
+            [view removeFromSuperview];
+        }
+    }
+    [_buttonArray removeAllObjects];
+}
+
+- (void)startEdit
+{
+    self.shaking = YES;
+    [self BeginWobble];
+    EIQuickNavDataModel *model = [EIQuickNavDataModel sharedInstance];
+    NSArray *user = [model userNav];
+    self.userArray = [NSMutableArray arrayWithArray:user];
+    [[self.boardView viewWithTag:99] setHidden:NO];
+    if([self.userArray count]>4)
+    {
+        [self setEraseHidden:NO];
+    }
+}
+
+- (void)endEdit
+{
+    self.shaking = NO;
+    [self EndWobble];
+    EIQuickNavDataModel *model = [EIQuickNavDataModel sharedInstance];
+    [model setUserNav:self.userArray];
+    [self setEraseHidden:YES];
+     [[self.boardView viewWithTag:99] setHidden:YES];
+}
+
+- (void)setEraseHidden:(BOOL)isHidden
+{
+    for (UIView *view in _buttonArray) {
+        UIButton *button = (UIButton *)[view viewWithTag:kEraseButtonTag];
+        button.hidden = isHidden;
+    }
+}
 
 - (void)boardOpen{
     POST_NOTIFICATION(SUNButtonBoardWillOpenNotification,nil)
@@ -423,87 +945,15 @@ static EIQuickNavView *__board = nil;
     
     self.animating = YES;
     self.boardButtonRect = self.boardView.frame;
-    
-    CGRect screenFrame = [[UIScreen mainScreen] bounds];
-    [UIView animateWithDuration:0.3
+    [self resizeSubView];
+
+    [UIView animateWithDuration:0.2
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseInOut
                      animations:^{
-                         
-                         [self.boardView setFrame:CGRectMake(screenFrame.size.width/2-125,
-                                                             screenFrame.size.height/2-100, 250 , 250)];
-                         
+                         [self resizeFrame];
+
                          self.boardImageView.hidden = YES;
-                         
-                         UITapGestureRecognizer *windowTapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowTaped:)];
-                         [self.boardWindow addGestureRecognizer:windowTapGes];
-                         [windowTapGes release];
-                         
-                         NSArray *imgNames = [[NSArray alloc]initWithObjects:@"download.png",@"block.png",@"bluetooth.png",@"file.png", nil];
-                         NSArray *tabTitle = [[NSArray alloc]initWithObjects:@"download",@"block",@"bluetooth",@"file", nil];
-                         
-                         for (int i=0; i<4; i++) {
-                             CGRect rect;
-                             CGFloat heigth = (250 - 20) / 3;
-                             rect.size.width = heigth;
-                             rect.size.height = heigth;
-                             switch (i) {
-                                 case 0:
-                                     rect.origin.x = 10 + heigth;
-                                     rect.origin.y = 40-30;
-                                     break;
-                                 case 1:
-                                     rect.origin.x = 10 + heigth * 2;
-                                     rect.origin.y = 10 + heigth;
-                                     break;
-                                 case 2:
-                                     rect.origin.x = 10 + heigth;
-                                     rect.origin.y = 10 + heigth * 2;
-                                     break;
-                                 case 3:
-                                     rect.origin.x = 40-30;
-                                     rect.origin.y = 10 + heigth;
-                                     break;
-                             }
-                             
-                             //设置每个tabView
-                             UIView *tabView = [[UIView alloc] initWithFrame:rect];
-                             tabView.tag = i + 100;
-                             tabView.backgroundColor = [UIColor blueColor];
-                             
-                             //设置tabView的图标
-                             UIButton *tabButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                             tabButton.frame = CGRectMake(20, 0, 30, 30);
-                             [tabButton setBackgroundImage:[UIImage imageNamed:[imgNames objectAtIndex:i]] forState:UIControlStateNormal];
-                             //                             [tabButton setTag:i + 100];
-                             [tabButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
-                             [tabView addSubview:tabButton];
-                             
-                             //设置标题
-                             UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(5, 35, 60, 15)];
-                             titleLabel.font = [UIFont systemFontOfSize:12];
-                             titleLabel.textAlignment = NSTextAlignmentCenter;
-                             titleLabel.textColor = [UIColor whiteColor];
-                             titleLabel.backgroundColor = [UIColor clearColor];
-                             titleLabel.text = [tabTitle objectAtIndex:i];
-                             [tabView addSubview:titleLabel];
-                             
-                             UILongPressGestureRecognizer *longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(LongPressGestureRecognizer:)];
-                             [tabView addGestureRecognizer:longGesture];
-                             [longGesture release];
-                             
-                             UIPanGestureRecognizer * panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureHandle:)];
-                             [tabView addGestureRecognizer:panGesture];
-                             [panGesture release];
-                             
-                             
-                             UITapGestureRecognizer *tapGestureTel2 = [[[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(TwoPressGestureRecognizer:)]autorelease];
-                             [tapGestureTel2 setNumberOfTapsRequired:2];
-                             [tapGestureTel2 setNumberOfTouchesRequired:1];
-                             [tabView addGestureRecognizer:tapGestureTel2];
-                             
-                             [self.boardView addSubview:tabView];
-                             [_buttonArray addObject:tabView];
-                             [tabView release];
-                         }
                          
                          UILongPressGestureRecognizer *longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(LongPressGestureRecognizer:)];
                          [self.boardView addGestureRecognizer:longGesture];
@@ -524,7 +974,7 @@ static EIQuickNavView *__board = nil;
     TRY_TO_PERFORM(buttonBoardWillClose)
     self.animating = YES;
     self.shaking = NO;
-    [UIView animateWithDuration:0.3
+    [UIView animateWithDuration:0.2
                      animations:^{
                          self.boardView.frame = self.boardButtonRect;
                      }
@@ -534,6 +984,7 @@ static EIQuickNavView *__board = nil;
                              [tapView removeFromSuperview];
                          }
                          [_buttonArray removeAllObjects];
+                         [[self.boardView viewWithTag:99] removeFromSuperview];
                          POST_NOTIFICATION(SUNButtonBoarDidCloseNotification,nil)
                          TRY_TO_PERFORM(buttonBoardDidClose)
                          self.animating = NO;
@@ -592,60 +1043,51 @@ static EIQuickNavView *__board = nil;
     
 }
 
--(void)BeginWobble
+- (void)shaking:(UIView *)view isShake:(BOOL)isShake
 {
-    for (UIView *view in self.boardView.subviews)
-    {
-        for (UIView *v in view.subviews)
-        {
-            if ([v isMemberOfClass:[UIImageView class]])
-                [v setHidden:NO];
-        }
-    }
-    
-    NSAutoreleasePool* pool=[NSAutoreleasePool new];
-    for (UIView *view in self.boardView.subviews)
+    [[view viewWithTag:kEraseButtonTag] setHidden:!isShake];
+    if(isShake)
     {
         srand([[NSDate date] timeIntervalSince1970]);
         float rand=(float)random();
         CFTimeInterval t=rand*0.0000000001;
         [UIView animateWithDuration:0.1 delay:t options:0  animations:^
          {
-             view.transform=CGAffineTransformMakeRotation(-0.05);
+             view.transform = CGAffineTransformMakeRotationAt(-0.05, CGPointMake(0.5, 0.5));
          } completion:^(BOOL finished)
          {
              [UIView animateWithDuration:0.1 delay:0 options:UIViewAnimationOptionRepeat|UIViewAnimationOptionAutoreverse|UIViewAnimationOptionAllowUserInteraction  animations:^
               {
-                  view.transform=CGAffineTransformMakeRotation(0.05);
+                  view.transform = CGAffineTransformMakeRotationAt(0.05, CGPointMake(0.5, 0.5));
               } completion:^(BOOL finished) {}];
          }];
+    }
+    else
+    {
+        [UIView animateWithDuration:0.1 delay:0 options:UIViewAnimationOptionAllowUserInteraction|UIViewAnimationOptionBeginFromCurrentState animations:^
+         {
+             view.transform=CGAffineTransformIdentity;
+             
+         } completion:^(BOOL finished) {}];
+    }
+}
+
+-(void)BeginWobble
+{
+    NSAutoreleasePool* pool=[NSAutoreleasePool new];
+    for (UIView *view in _buttonArray)
+    {
+        [self shaking:view isShake:YES];
     }
     [pool release];
 }
 
 -(void)EndWobble
 {
-    for (UIView *view in self.boardView.subviews)
-    {
-        for (UIView *v in view.subviews)
-        {
-            if ([v isMemberOfClass:[UIImageView class]])
-                [v setHidden:YES];
-        }
-    }
-    
     NSAutoreleasePool* pool=[NSAutoreleasePool new];
-    for (UIView *view in self.boardView.subviews)
+    for (UIView *view in _buttonArray)
     {
-        [UIView animateWithDuration:0.1 delay:0 options:UIViewAnimationOptionAllowUserInteraction|UIViewAnimationOptionBeginFromCurrentState animations:^
-         {
-             view.transform=CGAffineTransformIdentity;
-             for (UIView *v in view.subviews)
-             {
-                 if ([v isMemberOfClass:[UIImageView class]])
-                     [v setHidden:YES];
-             }
-         } completion:^(BOOL finished) {}];
+        [self shaking:view isShake:NO];
     }
     [pool release];
 }
@@ -660,7 +1102,8 @@ static EIQuickNavView *__board = nil;
     UIView *hitedView = [super hitTest:point withEvent:event];
     if(![self pointInside:point withEvent:event])
     {
-        if([self.navViewDelegate isOpening])
+        if([self.navViewDelegate isOpening] &&
+           ![self.navViewDelegate isAdding])
         {
             return self;
         }
