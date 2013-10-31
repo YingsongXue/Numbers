@@ -382,7 +382,7 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
         dir = 0;
     }
     if (abs([[UIScreen mainScreen] bounds].size.height - point.y)<min) {
-        min = abs([[UIScreen mainScreen] bounds].size.width - point.x);
+//        min = abs([[UIScreen mainScreen] bounds].size.width - point.x);
         dir = 2;
     }
     
@@ -767,7 +767,7 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
 {
     if(self.isAdding)
     {
-        int count = [self.addPictureArray count];
+        int count = (int)[self.addPictureArray count];
         NSMutableArray *arr = [NSMutableArray array];
         for (int i= 0; i <count;i++)
         {

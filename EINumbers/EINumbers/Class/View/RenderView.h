@@ -27,14 +27,14 @@
 @end
 
 @interface RenderView : UIView
-@property(nonatomic, weak) id<RenderViewDataSource> dataSource;
-@property(nonatomic, weak) id<RenderViewtDelegate> delegate;
+@property(nonatomic, assign) id<RenderViewDataSource> dataSource;
+@property(nonatomic, assign) id<RenderViewtDelegate> delegate;
 @property(nonatomic, assign) CGFloat startPieAngle;
 @property(nonatomic, assign) CGFloat animationSpeed;
 @property(nonatomic, assign) CGPoint pieCenter;
 @property(nonatomic, assign) CGFloat pieRadius;
 @property(nonatomic, assign) BOOL    showLabel;
-@property(nonatomic, strong) UIFont  *labelFont;
+@property(nonatomic, retain) UIFont  *labelFont;
 @property(nonatomic, assign) CGFloat labelRadius;
 @property(nonatomic, assign) CGFloat selectedSliceStroke;
 @property(nonatomic, assign) CGFloat selectedSliceOffsetRadius;

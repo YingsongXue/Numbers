@@ -63,7 +63,7 @@
         isAnimating = NO;
         isTapStopped = NO;
         
-        self.pieChart = [[RenderView alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)];
+        self.pieChart = [[[RenderView alloc]initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height)] autorelease];
         self.pieChart.dataSource = self;
         [self.pieChart setStartPieAngle:0];
         [self.pieChart setAnimationSpeed:1.0];
@@ -90,10 +90,10 @@
 - (void)drawRect:(CGRect)rect {
     //    CGContextRef context = UIGraphicsGetCurrentContext();
     
-    int wedges = [mValueArray count];
+    int wedges = (int)[mValueArray count];
     if (wedges > [mColorArray count]) {
-        NSLog(@"Number of colors is not enough: please add %d kinds of colors.",wedges - [mColorArray count]);
-        for (int i= [mColorArray count]; i<wedges; ++i) {
+        NSLog(@"Number of colors is not enough: please add %u kinds of colors.",wedges - [mColorArray count]);
+        for (int i= (int)[mColorArray count]; i<wedges; ++i) {
             [mColorArray addObject:[UIColor whiteColor]];
         }
     }
@@ -110,10 +110,10 @@
     //    int centerY = rect.size.height / 2.0;
     //    int radius  = (centerX > centerY ? centerX : centerY);
     
-    float startAngle = mZeroAngle;
+//    float startAngle = mZeroAngle;
     float endAngle   = mZeroAngle;
     for (int i = 0; i < wedges; ++i) {
-        startAngle = endAngle;
+//        startAngle = endAngle;
         endAngle  += [[mValueArray objectAtIndex:i] floatValue] * frac;
 //        NSLog(@"endAngle:%lf",endAngle);
         [mThetaArray addObject:[NSNumber numberWithFloat:endAngle]];

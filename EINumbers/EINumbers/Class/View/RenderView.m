@@ -110,6 +110,9 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
 
 - (void)dealloc
 {
+    [_labelFont release];
+    
+    [super dealloc];
 }
 
 - (id)initWithFrame:(CGRect)frame

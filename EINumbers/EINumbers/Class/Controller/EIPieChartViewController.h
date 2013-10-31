@@ -11,8 +11,8 @@
 
 @interface EIPieChartViewController : UIViewController<PieChartDelegate>
 {
-    NSString *navTitle;
-    NSMutableArray *dataArr;
+    NSString *_navTitle;
+    NSMutableArray *_dataArr;
 }
 
 @property (nonatomic,retain) NSString *navTitle;

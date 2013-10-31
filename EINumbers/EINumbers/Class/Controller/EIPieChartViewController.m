@@ -12,30 +12,30 @@
 #define PIE_HEIGHT 280
 
 @interface EIPieChartViewController ()
-@property (nonatomic,strong) NSMutableArray *valueArray;
-@property (nonatomic,strong) NSMutableArray *colorArray;
-@property (nonatomic,strong) NSMutableArray *valueArray2;
-@property (nonatomic,strong) NSMutableArray *colorArray2;
-@property (nonatomic,strong) PieChartView *pieChartView;
-@property (nonatomic,strong) UIView *pieContainer;
+@property (nonatomic,retain) NSMutableArray *valueArray;
+@property (nonatomic,retain) NSMutableArray *colorArray;
+@property (nonatomic,retain) NSMutableArray *valueArray2;
+@property (nonatomic,retain) NSMutableArray *colorArray2;
+@property (nonatomic,retain) PieChartView *pieChartView;
+@property (nonatomic,retain) UIView *pieContainer;
 @property (nonatomic)BOOL inOut;
-@property (nonatomic,strong) UILabel *selLabel;
+@property (nonatomic,retain) UILabel *selLabel;
 @end
 
 @implementation EIPieChartViewController
-@synthesize navTitle;
-@synthesize dataArr;
+@synthesize navTitle = _navTitle;
+@synthesize dataArr = _dataArr;
 
 - (void)dealloc
 {
-    [self.valueArray release];
-    [self.colorArray release];
-    [self.valueArray2 release];
-    [self.colorArray2 release];
-    [self.pieContainer release];
-    [self.selLabel release];
-    [navTitle release];
-    [dataArr release];
+    [_valueArray release];
+    [_colorArray release];
+    [_valueArray2 release];
+    [_colorArray2 release];
+    [_pieContainer release];
+    [_selLabel release];
+    [_navTitle release];
+    [_dataArr release];
     [super dealloc];
 }
 
@@ -45,19 +45,19 @@
         //初始化数据
     }
     else {
-        self.valueArray = [[NSMutableArray alloc] initWithObjects:
+        self.valueArray = [[[NSMutableArray alloc] initWithObjects:
                            [NSNumber numberWithInt:2],
                            [NSNumber numberWithInt:3],
                            [NSNumber numberWithInt:2],
                            [NSNumber numberWithInt:3],
                            [NSNumber numberWithInt:3],
                            [NSNumber numberWithInt:4],
-                           nil];
-        self.valueArray2 = [[NSMutableArray alloc] initWithObjects:
+                           nil]autorelease];
+        self.valueArray2 = [[[NSMutableArray alloc] initWithObjects:
                             [NSNumber numberWithInt:3],
                             [NSNumber numberWithInt:2],
                             [NSNumber numberWithInt:2],
-                            nil];
+                            nil]autorelease];
         
         self.colorArray = [NSMutableArray arrayWithObjects:
                            [UIColor colorWithHue:((0/8)%20)/20.0+0.02 saturation:(0%8+3)/10.0 brightness:91/100.0 alpha:1],
@@ -67,11 +67,11 @@
                            [UIColor colorWithHue:((4/8)%20)/20.0+0.02 saturation:(4%8+3)/10.0 brightness:91/100.0 alpha:1],
                            [UIColor colorWithHue:((5/8)%20)/20.0+0.02 saturation:(5%8+3)/10.0 brightness:91/100.0 alpha:1],
                            nil];
-        self.colorArray2 = [[NSMutableArray alloc] initWithObjects:
+        self.colorArray2 = [[[NSMutableArray alloc] initWithObjects:
                             [UIColor purpleColor],
                             [UIColor orangeColor],
                             [UIColor magentaColor],
-                            nil];
+                            nil]autorelease];
     }
 }
 
@@ -86,24 +86,24 @@
     CGRect pieFrame = CGRectMake((self.view.frame.size.width - PIE_HEIGHT) / 2, 80-0, PIE_HEIGHT, PIE_HEIGHT);
     
     UIImage *shadowImg = [UIImage imageNamed:@"shadow.png"];
-    UIImageView *shadowImgView = [[UIImageView alloc]initWithImage:shadowImg];
+    UIImageView *shadowImgView = [[[UIImageView alloc]initWithImage:shadowImg] autorelease];
     shadowImgView.frame = CGRectMake(0, pieFrame.origin.y + PIE_HEIGHT*0.92, shadowImg.size.width/2, shadowImg.size.height/2);
     [self.view addSubview:shadowImgView];
     
-    self.pieContainer = [[UIView alloc]initWithFrame:pieFrame];
-    self.pieChartView = [[PieChartView alloc]initWithFrame:self.pieContainer.bounds withValue:self.valueArray withColor:self.colorArray];
+    self.pieContainer = [[[UIView alloc]initWithFrame:pieFrame]autorelease];
+    self.pieChartView = [[[PieChartView alloc]initWithFrame:self.pieContainer.bounds withValue:self.valueArray withColor:self.colorArray] autorelease];
     self.pieChartView.delegate = self;
     [self.pieContainer addSubview:self.pieChartView];
     [self.pieChartView setAmountText:@"-2456.0"];
     [self.view addSubview:self.pieContainer];
     
     //add selected view
-    UIImageView *selView = [[UIImageView alloc]init];
+    UIImageView *selView = [[[UIImageView alloc]init]autorelease];
     selView.image = [UIImage imageNamed:@"select.png"];
     selView.frame = CGRectMake((self.view.frame.size.width - selView.image.size.width/2)/2, self.pieContainer.frame.origin.y + self.pieContainer.frame.size.height, selView.image.size.width/2, selView.image.size.height/2);
     [self.view addSubview:selView];
     
-    self.selLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 24, selView.image.size.width/2, 21)];
+    self.selLabel = [[[UILabel alloc]initWithFrame:CGRectMake(0, 24, selView.image.size.width/2, 21)]autorelease];
     self.selLabel.backgroundColor = [UIColor clearColor];
     self.selLabel.textAlignment = NSTextAlignmentCenter;
     self.selLabel.font = [UIFont systemFontOfSize:17];
@@ -146,7 +146,7 @@
     self.inOut = !self.inOut;
     self.pieChartView.delegate = nil;
     [self.pieChartView removeFromSuperview];
-    self.pieChartView = [[PieChartView alloc]initWithFrame:self.pieContainer.bounds withValue:self.inOut?self.valueArray:self.valueArray2 withColor:self.inOut?self.colorArray:self.colorArray2];
+    self.pieChartView = [[[PieChartView alloc]initWithFrame:self.pieContainer.bounds withValue:self.inOut?self.valueArray:self.valueArray2 withColor:self.inOut?self.colorArray:self.colorArray2] autorelease];
     self.pieChartView.delegate = self;
     [self.pieContainer addSubview:self.pieChartView];
     [self.pieChartView reloadChart];

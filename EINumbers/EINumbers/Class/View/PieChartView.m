@@ -9,10 +9,10 @@
 #import "PieChartView.h"
 
 @interface PieChartView()
-@property (nonatomic,strong)RotatedView *rotatedView;
-@property (nonatomic,strong) UIButton *centerView;
-@property (nonatomic,strong) UILabel *amountLabel;
-@property (nonatomic, strong) UILabel *title;
+@property (nonatomic,retain)RotatedView *rotatedView;
+@property (nonatomic,retain) UIButton *centerView;
+@property (nonatomic,retain) UILabel *amountLabel;
+@property (nonatomic, retain) UILabel *title;
 @end
 
 @implementation PieChartView
@@ -20,9 +20,11 @@
 - (void)dealloc
 {
     self.rotatedView.delegate = nil;
-    self.rotatedView = nil;
-    self.centerView = nil;
-    self.amountLabel = nil;
+    [_rotatedView release];
+    [_centerView release];
+    [_amountLabel release];
+    
+    [super dealloc];
 }
 
 - (id)initWithFrame:(CGRect)frame withValue:(NSMutableArray *)valueArr withColor:(NSMutableArray *)colorArr
@@ -30,7 +32,7 @@
     self = [super initWithFrame:frame];
     if (self) {
         [self sortValueArr:valueArr colorArr:colorArr];
-        self.rotatedView = [[RotatedView alloc]initWithFrame:self.bounds];
+        self.rotatedView = [[[RotatedView alloc]initWithFrame:self.bounds] autorelease];
         self.rotatedView.mValueArray = valueArr;
         self.rotatedView.mColorArray = colorArr;
         self.rotatedView.delegate = self;
@@ -44,7 +46,7 @@
         [self.centerView setBackgroundImage:centerImage forState:UIControlStateHighlighted];
         self.centerView.frame = CGRectMake((frame.size.width - centerImage.size.width/2)/2, (frame.size.height - centerImage.size.height/2)/2, centerImage.size.width/2, centerImage.size.height/2);
         int titleWidth = 65;
-        self.title = [[UILabel alloc]initWithFrame:CGRectMake((centerImage.size.width/2 - titleWidth)/2,35 , titleWidth, 17)];
+        self.title = [[[UILabel alloc]initWithFrame:CGRectMake((centerImage.size.width/2 - titleWidth)/2,35 , titleWidth, 17)] autorelease];
         self.title.backgroundColor = [UIColor clearColor];
         self.title.textAlignment = NSTextAlignmentCenter;
         self.title.font = [UIFont systemFontOfSize:16];
@@ -53,7 +55,7 @@
         [self.centerView addSubview:self.title];
         
         int amountWidth = 75;
-        self.amountLabel = [[UILabel alloc]initWithFrame:CGRectMake((centerImage.size.width/2 - amountWidth)/2, 53, amountWidth, 22)];
+        self.amountLabel = [[[UILabel alloc]initWithFrame:CGRectMake((centerImage.size.width/2 - amountWidth)/2, 53, amountWidth, 22)] autorelease];
         self.amountLabel.backgroundColor = [UIColor clearColor];
         self.amountLabel.textAlignment = NSTextAlignmentCenter;
         self.amountLabel.font = [UIFont boldSystemFontOfSize:21];
