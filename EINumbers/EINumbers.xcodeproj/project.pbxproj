@@ -12,7 +12,13 @@
 		15279AA5181B72F5006C06DE /* bluetooth.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA0181B72F5006C06DE /* bluetooth.png */; };
 		15279AA6181B72F5006C06DE /* download.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA1181B72F5006C06DE /* download.png */; };
 		15279AA7181B72F5006C06DE /* file.png in Resources */ = {isa = PBXBuildFile; fileRef = 15279AA2181B72F5006C06DE /* file.png */; };
-		B50A3D04181F38500022BB2F /* erase.png in Resources */ = {isa = PBXBuildFile; fileRef = B50A3D03181F38500022BB2F /* erase.png */; };
+		15469039182263CD00EC4FD0 /* center.png in Resources */ = {isa = PBXBuildFile; fileRef = 15469036182263CD00EC4FD0 /* center.png */; };
+		1546903A182263CD00EC4FD0 /* select.png in Resources */ = {isa = PBXBuildFile; fileRef = 15469037182263CD00EC4FD0 /* select.png */; };
+		1546903B182263CD00EC4FD0 /* shadow.png in Resources */ = {isa = PBXBuildFile; fileRef = 15469038182263CD00EC4FD0 /* shadow.png */; };
+		154690421822641600EC4FD0 /* PieChartView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1546903D1822641600EC4FD0 /* PieChartView.m */; };
+		154690431822641600EC4FD0 /* RenderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1546903F1822641600EC4FD0 /* RenderView.m */; };
+		154690441822641600EC4FD0 /* RotatedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 154690411822641600EC4FD0 /* RotatedView.m */; };
+		15469047182264B200EC4FD0 /* EIPieChartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 15469046182264B200EC4FD0 /* EIPieChartViewController.m */; };
 		1549BE9F18210E13003C465C /* UIView+MDCShineEffect.m in Sources */ = {isa = PBXBuildFile; fileRef = 1549BE8018210E13003C465C /* UIView+MDCShineEffect.m */; };
 		1549BEA018210E13003C465C /* libzbar.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1549BE9918210E13003C465C /* libzbar.a */; };
 		1549BEA118210E13003C465C /* zbar-back.png in Resources */ = {isa = PBXBuildFile; fileRef = 1549BE9B18210E13003C465C /* zbar-back.png */; };
@@ -28,6 +34,7 @@
 		1549BEBC18210E86003C465C /* rscode.c in Sources */ = {isa = PBXBuildFile; fileRef = 1549BEB218210E86003C465C /* rscode.c */; };
 		1549BEBD18210E86003C465C /* split.c in Sources */ = {isa = PBXBuildFile; fileRef = 1549BEB418210E86003C465C /* split.c */; };
 		1549BEC018210EC4003C465C /* EIScannerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1549BEBF18210EC4003C465C /* EIScannerViewController.m */; };
+		B50A3D04181F38500022BB2F /* erase.png in Resources */ = {isa = PBXBuildFile; fileRef = B50A3D03181F38500022BB2F /* erase.png */; };
 		B51910F2181CFE9C00E3DD7A /* EIQuickNavDataModel.m in Sources */ = {isa = PBXBuildFile; fileRef = B51910F1181CFE9C00E3DD7A /* EIQuickNavDataModel.m */; };
 		B55CC86C181B544E003F5CB2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B55CC86B181B544E003F5CB2 /* Foundation.framework */; };
 		B55CC86E181B544E003F5CB2 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B55CC86D181B544E003F5CB2 /* CoreGraphics.framework */; };
@@ -90,7 +97,17 @@
 		15279AA0181B72F5006C06DE /* bluetooth.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bluetooth.png; sourceTree = "<group>"; };
 		15279AA1181B72F5006C06DE /* download.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = download.png; sourceTree = "<group>"; };
 		15279AA2181B72F5006C06DE /* file.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = file.png; sourceTree = "<group>"; };
-		B50A3D03181F38500022BB2F /* erase.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = erase.png; sourceTree = "<group>"; };
+		15469036182263CD00EC4FD0 /* center.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = center.png; sourceTree = "<group>"; };
+		15469037182263CD00EC4FD0 /* select.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = select.png; sourceTree = "<group>"; };
+		15469038182263CD00EC4FD0 /* shadow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = shadow.png; sourceTree = "<group>"; };
+		1546903C1822641600EC4FD0 /* PieChartView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PieChartView.h; sourceTree = "<group>"; };
+		1546903D1822641600EC4FD0 /* PieChartView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PieChartView.m; sourceTree = "<group>"; };
+		1546903E1822641600EC4FD0 /* RenderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderView.h; sourceTree = "<group>"; };
+		1546903F1822641600EC4FD0 /* RenderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RenderView.m; sourceTree = "<group>"; };
+		154690401822641600EC4FD0 /* RotatedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RotatedView.h; sourceTree = "<group>"; };
+		154690411822641600EC4FD0 /* RotatedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RotatedView.m; sourceTree = "<group>"; };
+		15469045182264B200EC4FD0 /* EIPieChartViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EIPieChartViewController.h; sourceTree = "<group>"; };
+		15469046182264B200EC4FD0 /* EIPieChartViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EIPieChartViewController.m; sourceTree = "<group>"; };
 		1549BE7F18210E13003C465C /* UIView+MDCShineEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+MDCShineEffect.h"; sourceTree = "<group>"; };
 		1549BE8018210E13003C465C /* UIView+MDCShineEffect.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+MDCShineEffect.m"; sourceTree = "<group>"; };
 		1549BE8518210E13003C465C /* Decoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Decoder.h; sourceTree = "<group>"; };
@@ -136,6 +153,7 @@
 		1549BEB518210E86003C465C /* split.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = split.h; sourceTree = "<group>"; };
 		1549BEBE18210EC4003C465C /* EIScannerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EIScannerViewController.h; sourceTree = "<group>"; };
 		1549BEBF18210EC4003C465C /* EIScannerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EIScannerViewController.m; sourceTree = "<group>"; };
+		B50A3D03181F38500022BB2F /* erase.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = erase.png; sourceTree = "<group>"; };
 		B51910F0181CFE9C00E3DD7A /* EIQuickNavDataModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EIQuickNavDataModel.h; sourceTree = "<group>"; };
 		B51910F1181CFE9C00E3DD7A /* EIQuickNavDataModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EIQuickNavDataModel.m; sourceTree = "<group>"; };
 		B55CC868181B544D003F5CB2 /* EINumbers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EINumbers.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -439,6 +457,9 @@
 		B55CC89E181B54D7003F5CB2 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				15469036182263CD00EC4FD0 /* center.png */,
+				15469037182263CD00EC4FD0 /* select.png */,
+				15469038182263CD00EC4FD0 /* shadow.png */,
 				B5D617B018208D750084A26A /* add.png */,
 				B50A3D03181F38500022BB2F /* erase.png */,
 				15279A9E181B72F5006C06DE /* 40.png */,
@@ -469,6 +490,8 @@
 				B5A21D8F181B6AA0002F4E2D /* EIMainViewController.m */,
 				B5D617AD18208B960084A26A /* EIAddQuickNavViewController.h */,
 				B5D617AE18208B960084A26A /* EIAddQuickNavViewController.m */,
+				15469045182264B200EC4FD0 /* EIPieChartViewController.h */,
+				15469046182264B200EC4FD0 /* EIPieChartViewController.m */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -487,6 +510,12 @@
 		B55CC8A3181B55CF003F5CB2 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				1546903C1822641600EC4FD0 /* PieChartView.h */,
+				1546903D1822641600EC4FD0 /* PieChartView.m */,
+				1546903E1822641600EC4FD0 /* RenderView.h */,
+				1546903F1822641600EC4FD0 /* RenderView.m */,
+				154690401822641600EC4FD0 /* RotatedView.h */,
+				154690411822641600EC4FD0 /* RotatedView.m */,
 				B5A21D91181B6AD0002F4E2D /* EIQuickNavView.h */,
 				B5A21D92181B6AD0002F4E2D /* EIQuickNavView.m */,
 			);
@@ -701,6 +730,7 @@
 				1549BEA318210E13003C465C /* zbar-helpicons.png in Resources */,
 				15279AA7181B72F5006C06DE /* file.png in Resources */,
 				B5A21D9A181B6C49002F4E2D /* 114.png in Resources */,
+				1546903A182263CD00EC4FD0 /* select.png in Resources */,
 				B55CC876181B544E003F5CB2 /* InfoPlist.strings in Resources */,
 				B5D617B118208D750084A26A /* add.png in Resources */,
 				B5A21D99181B6C49002F4E2D /* 57.png in Resources */,
@@ -708,7 +738,9 @@
 				1549BEA218210E13003C465C /* zbar-help.html in Resources */,
 				15279AA4181B72F5006C06DE /* block.png in Resources */,
 				15279AA6181B72F5006C06DE /* download.png in Resources */,
+				15469039182263CD00EC4FD0 /* center.png in Resources */,
 				1549BEA118210E13003C465C /* zbar-back.png in Resources */,
+				1546903B182263CD00EC4FD0 /* shadow.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -725,6 +757,7 @@
 				B55CC912181B5BAC003F5CB2 /* FMDatabase+InMemoryOnDiskIO.m in Sources */,
 				B55CC8F2181B58C0003F5CB2 /* ASICloudFilesContainer.m in Sources */,
 				1549BEC018210EC4003C465C /* EIScannerViewController.m in Sources */,
+				154690431822641600EC4FD0 /* RenderView.m in Sources */,
 				B55CC8ED181B58C0003F5CB2 /* ASIHTTPRequest.m in Sources */,
 				B51910F2181CFE9C00E3DD7A /* EIQuickNavDataModel.m in Sources */,
 				B55CC915181B5BAC003F5CB2 /* FMDatabasePool.m in Sources */,
@@ -752,6 +785,8 @@
 				B55CC8F7181B58C0003F5CB2 /* ASICloudFilesRequest.m in Sources */,
 				B55CC8F3181B58C0003F5CB2 /* ASICloudFilesContainerRequest.m in Sources */,
 				B55CC8EB181B58C0003F5CB2 /* ASIDownloadCache.m in Sources */,
+				15469047182264B200EC4FD0 /* EIPieChartViewController.m in Sources */,
+				154690421822641600EC4FD0 /* PieChartView.m in Sources */,
 				B55CC8EE181B58C0003F5CB2 /* ASIInputStream.m in Sources */,
 				B55CC8FA181B58C0003F5CB2 /* ASIS3BucketRequest.m in Sources */,
 				B55CC914181B5BAC003F5CB2 /* FMDatabaseAdditions.m in Sources */,
@@ -764,6 +799,7 @@
 				B55CC8F0181B58C0003F5CB2 /* ASIWebPageRequest.m in Sources */,
 				1549BEB718210E86003C465C /* mask.c in Sources */,
 				B55CC8FD181B58C0003F5CB2 /* ASIS3ServiceRequest.m in Sources */,
+				154690441822641600EC4FD0 /* RotatedView.m in Sources */,
 				B55CC8F5181B58C0003F5CB2 /* ASICloudFilesObject.m in Sources */,
 				B55CC8EA181B58C0003F5CB2 /* ASIDataDecompressor.m in Sources */,
 				B55CC901181B5978003F5CB2 /* JSONKit.m in Sources */,
