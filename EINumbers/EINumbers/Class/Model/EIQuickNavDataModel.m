@@ -8,9 +8,13 @@
 
 #import "EIQuickNavDataModel.h"
 
+#define RADIANS_TO_DEGREES(radians) ((radians) * (180.0 / M_PI))
+#define DEGREES_TO_RADIANS(angle) ((angle) / 180.0 * M_PI)
+
+#define boardWitdh 295.0f
+
 #define kQuickNavKey @"QuickNavKey"
 #define kQuickNavFilePath @"EIQuickNavPosition.plist"
-#define kQuickNavPosKey @"NavPos"
 #define kQUickNavListKey @"NavList"
 #define kQuickNavDefaultKey @"NavDefault"
 
@@ -37,7 +41,7 @@ static EIQuickNavDataModel *_sharedInstace = nil;
 #pragma mark User Default setting
 - (void)setUserNav:(NSArray *)array
 {
-    if([array count] >=4 && [array count] <=6)
+    if([array count] >=4 && [array count] <=8)
     {
         [[NSUserDefaults standardUserDefaults] setObject:array  forKey:kQuickNavKey];
     }
@@ -62,30 +66,12 @@ static EIQuickNavDataModel *_sharedInstace = nil;
 }
 
 #pragma mark Get Position Information
-- (CGFloat)boardWidthOfNumbers:(NSUInteger)index
-{
-    switch (index)
-    {
-        case 4:
-            return 250.0f;
-            break;
-        case 5:
-            return 280.0f;
-            break;
-        case 6:
-            return 280.0f;
-            break;
-        default:
-            return 250.0f;
-            break;
-    }
-}
 
 - (CGRect )posOfBaseForNumbers:(NSUInteger)index total:(CGSize)totalSize
 {
-    CGFloat width = [self boardWidthOfNumbers:index];
+    CGFloat width = boardWitdh;
     return CGRectMake(totalSize.width * .5f - width * .5f,
-                      totalSize.height * .5f -100,
+                      totalSize.height * .5f - width * .5f,
                       width,
                       width);
 }
@@ -95,136 +81,101 @@ static EIQuickNavDataModel *_sharedInstace = nil;
     switch (index)
     {
         case 4:
-            return [self posOfNumberFour];
-            break;
         case 5:
-            return [self posOfNumberFive];
-            break;
         case 6:
-            return [self posOfNumberSix];
+            return [self posOfNumber:index];
+            break;
+        case 7:
+        case 8:
+            return [self posOfNumberEight:index];
             break;
         default:
-            return [self posOfNumberFour];
+            return [self posOfNumber:4];
             break;
     }
 }
 
-- (NSArray *)posOfNumberSix
+- (NSArray *)posOfNumber:(NSUInteger)index
 {
-    NSMutableArray *resultArr = [NSMutableArray arrayWithCapacity:6];
-    CGFloat boradWidth = [self boardWidthOfNumbers:6];
-    for (int i=0; i<6; i++)
+    if(index >= 4 &&
+       index<= 6)
     {
-        CGRect rect;
-        CGFloat width = boradWidth / 4;
-        CGFloat height = boradWidth / 3;
-        CGFloat dValue = (height - width) *.5f;
-        rect.size.width = width - 10;
-        rect.size.height = width - 10;
-        switch (i) {
-            case 0:
-                rect.origin.x = width + 5;
-                rect.origin.y = 5;
-                break;
-            case 1:
-                rect.origin.x = (width * 2) + 5;
-                rect.origin.y = 5;
-                break;
-            case 2:
-                rect.origin.x = (width * 3) + 5;
-                rect.origin.y = height + 5 + dValue;
-                break;
-            case 3:
-                rect.origin.x = (width * 2) + 5;
-                rect.origin.y = (height * 2) + 5;
-                break;
+        NSMutableArray *resultArr = [NSMutableArray arrayWithCapacity:6];
+        CGFloat boardWidth = boardWitdh;
+        
+        float startDegree = 0.0;
+        switch (index) {
             case 4:
-                rect.origin.x = width + 5;
-                rect.origin.y = (height * 2) + 5;
-                break;
             case 5:
-                rect.origin.x = 5;
-                rect.origin.y = height + 5 + dValue;
+                startDegree = 90;
+                break;
+            case 6:
+                startDegree = 60;
+                break;
+            default:
                 break;
         }
-        [resultArr addObject:[NSValue valueWithCGRect:rect]];
-    }
-    return resultArr;
-}
-
-- (NSArray *)posOfNumberFive
-{
-    NSMutableArray *resultArr = [NSMutableArray arrayWithCapacity:5];
-    CGFloat boradWidth = [self boardWidthOfNumbers:5];
-    for (int i=0; i<5; i++)
-    {
-        CGRect rect;
-        CGFloat width = boradWidth / 3;
-        CGFloat halfWidth = width * .5f;
-        rect.size.width = width - 10;
-        rect.size.height = width - 10;
-        switch (i) {
-            case 0:
-                rect.origin.x = width + 5;
-                rect.origin.y = 5;
-                break;
-            case 1:
-                rect.origin.x = (width * 2) + 5;
-                rect.origin.y = width + 5;
-                break;
-            case 2:
-                rect.origin.x = width + halfWidth + 5;
-                rect.origin.y = (width * 2) + 5;
-                break;
-            case 3:
-                rect.origin.x = halfWidth + 5;
-                rect.origin.y = (width * 2) + 5;
-                break;
-            case 4:
-                rect.origin.x = 5;
-                rect.origin.y = width + 5;
-                break;
+        
+        CGSize size = CGSizeMake(56, 56);
+        CGPoint center = CGPointMake(boardWidth * .5f, boardWidth * .5f);
+        float radius = boardWidth * .5f * 0.7f;
+        float increase = DEGREES_TO_RADIANS(360/index);
+        float base = DEGREES_TO_RADIANS(startDegree);
+        
+        for (int i=0; i<index; i++)
+        {
+            CGRect rect;
+            rect.size = size;
+            float degree = base - i * increase;
+            rect.origin.x = center.x + radius * cosf(degree) - rect.size.width * .5f;
+            rect.origin.y = center.y - radius * sin(degree) - rect.size.height * .5f;
+            
+            [resultArr addObject:[NSValue valueWithCGRect:rect]];
         }
-        [resultArr addObject:[NSValue valueWithCGRect:rect]];
+        return resultArr;
     }
-    return resultArr;
+    return nil;
 }
 
-- (NSArray *)posOfNumberFour
+- (NSArray *)posOfNumberEight:(NSInteger)index
 {
-    NSMutableArray *resultArr = [NSMutableArray arrayWithCapacity:4];
-    CGFloat boradWidth = [self boardWidthOfNumbers:4];
-    for (int i=0; i<4; i++)
+    if(index != 7 && index != 8)
     {
-//        NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+        return nil;
+    }
+    
+    NSMutableArray *resultArr = [NSMutableArray arrayWithCapacity:index];
+    CGFloat boardWidth = boardWitdh;
+    
+    CGSize size = CGSizeMake(56, 56);
+    CGPoint center = CGPointMake(boardWidth * .5f, boardWidth * .5f);
+    float radius1 = boardWidth * .5f * 0.7f;
+    float radius2 = radius1 * 1.414;
+    float increase = DEGREES_TO_RADIANS(360/4);
+    float base1 = DEGREES_TO_RADIANS(90);
+    float base2 = DEGREES_TO_RADIANS(45);
+    
+    for (int i=0; i<8; i++)
+    {
+        if(i == 3 && index == 7)
+        {
+            continue;
+        }
+        float base = base2;
+        float radius = radius2;
+        if(i%2 == 0)
+        {
+            base = base1;
+            radius = radius1;
+        }
         
         CGRect rect;
-        CGFloat heigth = (boradWidth - 20) / 3;
-        rect.size.width = heigth;
-        rect.size.height = heigth;
-        switch (i)
-        {
-            case 0:
-                rect.origin.x = 10 + heigth;
-                rect.origin.y = 40-30;
-                break;
-            case 1:
-                rect.origin.x = 10 + heigth * 2;
-                rect.origin.y = 10 + heigth;
-                break;
-            case 2:
-                rect.origin.x = 10 + heigth;
-                rect.origin.y = 10 + heigth * 2;
-                break;
-            case 3:
-                rect.origin.x = 40-30;
-                rect.origin.y = 10 + heigth;
-                break;
-        }
-//        [dict setValue:[NSValue valueWithCGRect:rect] forKey:kButtonRect];
-//        [dict setValue:[NSString stringWithFormat:@"%i",i] forKey:kButtonIndex];
+        rect.size = size;
+        float degree = base - (i/2) * increase;
+        rect.origin.x = center.x + radius * cosf(degree) - rect.size.width * .5f;
+        rect.origin.y = center.y - radius * sin(degree) - rect.size.height * .5f;
+        
         [resultArr addObject:[NSValue valueWithCGRect:rect]];
-//        [dict release];
     }
     return resultArr;
 }

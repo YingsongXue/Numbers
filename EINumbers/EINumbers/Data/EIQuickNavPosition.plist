@@ -2,28 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NavPos</key>
-	<dict>
-		<key>6</key>
-		<array/>
-		<key>5</key>
-		<array/>
-		<key>4</key>
-		<array>
-			<string>{34, 43}</string>
-			<string>{34, 43}</string>
-			<string>{34, 43}</string>
-			<string>{34, 43}</string>
-		</array>
-	</dict>
 	<key>NavList</key>
 	<array>
-		<string>download.png</string>
-		<string>block.png</string>
-		<string>bluetooth.png</string>
-		<string>file.png</string>
-		<string>file.png</string>
-		<string>file.png</string>
+		<string>camera.png</string>
+		<string>customer.png</string>
+		<string>home.png</string>
+		<string>inventory.png</string>
+		<string>knowledge.png</string>
+		<string>survey.png</string>
+		<string>task.png</string>
+		<string>turnbyturn.png</string>
+		<string>up.png</string>
+		<string>code.png</string>
 	</array>
 	<key>NavDefault</key>
 	<array>

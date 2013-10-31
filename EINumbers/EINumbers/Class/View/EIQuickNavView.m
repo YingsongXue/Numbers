@@ -8,7 +8,6 @@
 
 #import "EIQuickNavView.h"
 #import "EIQuickNavDataModel.h"
-#import "EIAddQuickNavViewController.h"
 
 #define POST_NOTIFICATION(name,obj) [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:name object:obj]];
 
@@ -156,14 +155,14 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
         self.autoPosition = YES;
         self.boardSize = 50;
         
-        EIBoardView *boardView = [[EIBoardView alloc] initWithFrame:CGRectMake(kSepValue, 30, 50, 50)];
+        EIBoardView *boardView = [[EIBoardView alloc] initWithFrame:CGRectMake(kSepValue, 30, 60, 60)];
         boardView.navViewDelegate = self;
         [self.boardWindow addSubview:boardView];
         self.boardView = boardView;
         [self initialBoardView];
         [boardView release];
         
-        UIImageView *boardImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 50, 50)];
+        UIImageView *boardImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 60, 60)];
         boardImageView.image = [UIImage imageNamed:@"40"];
         boardImageView.backgroundColor = [UIColor clearColor];
         [self.boardView addSubview:boardImageView];
@@ -232,6 +231,7 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
     UITableView *tableView = [[UITableView alloc] initWithFrame:self.boardView.frame style:UITableViewStyleGrouped];
     tableView.delegate = self;
     tableView.dataSource = self;
+    tableView.backgroundColor = [UIColor grayColor];
     [self.addBgView addSubview:tableView];
     [tableView release];
     
@@ -274,7 +274,7 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
 - (void)setBoardViewTransTrue
 {
     [UIView animateWithDuration:0.2 animations:^{
-        self.boardView.alpha = 0.5;
+        self.boardView.alpha = 0.3;
     }];
 }
 
@@ -355,7 +355,7 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
         }
     }
     EIAddButtonItem *item = [self.addPictureArray objectAtIndex:[indexPath row]];
-    if((count <6 && !item.isSelected) ||
+    if((count <8 && !item.isSelected) ||
        (count > 4 && item.isSelected))
     {
         item.selected = !item.isSelected;
@@ -479,7 +479,7 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
             for (int i = 0; i < [self.posArray count]; i++)
             {
                 CGRect rect = [[self.posArray objectAtIndex:i] CGRectValue];
-                if(intersectionPercert(cRect,rect)>0.4)
+                if(intersectionPercert(rect,cRect)>0.2)
                 {
                     if(i != currentIndex)
                     {
@@ -779,6 +779,9 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
         }
         [[EIQuickNavDataModel sharedInstance] setUserNav:arr];
         
+        UITapGestureRecognizer *windowTapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowTaped:)];
+        [self.boardWindow addGestureRecognizer:windowTapGes];
+        [windowTapGes release];
         
         __block EIQuickNavView *weakSelf = self;
         [UIView animateWithDuration:0.3 animations:^{
@@ -846,10 +849,6 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
     button.hidden = YES;
     [self.boardView addSubview:button];
     
-    UITapGestureRecognizer *windowTapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowTaped:)];
-    [self.boardWindow addGestureRecognizer:windowTapGes];
-    [windowTapGes release];
-    
     for (int i =0; i < total; i++)
     {
         NSUInteger userIndex = [[self.userArray objectAtIndex:i] unsignedIntegerValue];
@@ -865,10 +864,8 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
         [tabButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
         [tabView addSubview:tabButton];
         
-//        UILabel *tabLabel = [[UILabel alloc] init];
-        
         UIButton *eraseButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [eraseButton setImage:[UIImage imageNamed:@"erase.png"] forState:UIControlStateNormal];
+        [eraseButton setImage:[UIImage imageNamed:@"delete.png"] forState:UIControlStateNormal];
         eraseButton.tag = kEraseButtonTag;
         eraseButton.hidden = YES;
         [eraseButton addTarget:self action:@selector(removeMe:) forControlEvents:UIControlEventTouchUpInside];
@@ -919,6 +916,10 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
     {
         [self setEraseHidden:NO];
     }
+    else
+    {
+        [self setEraseHidden:YES];
+    }
 }
 
 - (void)endEdit
@@ -958,6 +959,10 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
                          UILongPressGestureRecognizer *longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(LongPressGestureRecognizer:)];
                          [self.boardView addGestureRecognizer:longGesture];
                          [longGesture release];
+                         
+                         UITapGestureRecognizer *windowTapGes = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(windowTaped:)];
+                         [self.boardWindow addGestureRecognizer:windowTapGes];
+                         [windowTapGes release];
                      }
                      completion:^(BOOL finished) {
                          POST_NOTIFICATION(SUNButtonBoardDidOpenNotification,nil)
