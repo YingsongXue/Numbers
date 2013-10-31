@@ -16,6 +16,7 @@
 #define kSepValue 2
 #define kEraseButtonTag 4
 #define kClickButtonTag 3
+#define kLabelTag 2
 
 NSString *const SUNButtonBoardWillOpenNotification = @"SUNButtonBoardWillOpenNotification";
 NSString *const SUNButtonBoardDidOpenNotification = @"SUNButtonBoardDidOpenNotification";
@@ -479,7 +480,7 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
             for (int i = 0; i < [self.posArray count]; i++)
             {
                 CGRect rect = [[self.posArray objectAtIndex:i] CGRectValue];
-                if(intersectionPercert(rect,cRect)>0.2)
+                if(intersectionPercert(rect,cRect)>0.4)
                 {
                     if(i != currentIndex)
                     {
@@ -820,7 +821,10 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
         [view setFrame:rect];
         
         UIButton *tabButton = (UIButton *)[view viewWithTag:kClickButtonTag];
-        tabButton.frame = view.bounds;//CGRectMake((rect.size.width -30)* .5f, (rect.size.height - 30) * .5f, 30, 30);
+        tabButton.frame = CGRectMake(12.5, 0, view.bounds.size.width-25, view.bounds.size.height - 25);//view.bounds;//CGRectMake((rect.size.width -30)* .5f, (rect.size.height - 30) * .5f, 30, 30);
+        
+        UIButton *label = (UIButton *)[view viewWithTag:kLabelTag];
+        label.frame = CGRectMake(0, view.bounds.size.height-25, view.bounds.size.width, 25);
         
         UIButton *eraseButton = (UIButton *)[view viewWithTag:kEraseButtonTag];
         eraseButton.frame = CGRectMake((rect.size.width-44+16), -16, 44, 44);
@@ -863,6 +867,14 @@ CGAffineTransform CGAffineTransformMakeRotationAt(CGFloat angle, CGPoint pt)
         [tabButton setBackgroundImage:[UIImage imageNamed:imageName] forState:UIControlStateNormal];
         [tabButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
         [tabView addSubview:tabButton];
+        
+        UILabel *label = [[UILabel alloc] init];
+        label.tag = kLabelTag;
+        label.text = [imageName substringToIndex:[imageName length] -4];
+        label.textColor = [UIColor whiteColor];
+        label.textAlignment = NSTextAlignmentCenter;
+        [tabView addSubview:label];
+        [label release];
         
         UIButton *eraseButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [eraseButton setImage:[UIImage imageNamed:@"delete.png"] forState:UIControlStateNormal];

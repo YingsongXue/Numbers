@@ -12,6 +12,7 @@
 #define DEGREES_TO_RADIANS(angle) ((angle) / 180.0 * M_PI)
 
 #define boardWitdh 295.0f
+#define boardSize CGSizeMake(84, 84)
 
 #define kQuickNavKey @"QuickNavKey"
 #define kQuickNavFilePath @"EIQuickNavPosition.plist"
@@ -116,9 +117,9 @@ static EIQuickNavDataModel *_sharedInstace = nil;
                 break;
         }
         
-        CGSize size = CGSizeMake(56, 56);
+        CGSize size = boardSize;
         CGPoint center = CGPointMake(boardWidth * .5f, boardWidth * .5f);
-        float radius = boardWidth * .5f * 0.7f;
+        float radius = boardWidth * .5f * 0.65f;
         float increase = DEGREES_TO_RADIANS(360/index);
         float base = DEGREES_TO_RADIANS(startDegree);
         
@@ -147,9 +148,9 @@ static EIQuickNavDataModel *_sharedInstace = nil;
     NSMutableArray *resultArr = [NSMutableArray arrayWithCapacity:index];
     CGFloat boardWidth = boardWitdh;
     
-    CGSize size = CGSizeMake(56, 56);
+    CGSize size = boardSize;
     CGPoint center = CGPointMake(boardWidth * .5f, boardWidth * .5f);
-    float radius1 = boardWidth * .5f * 0.7f;
+    float radius1 = boardWidth * .5f * 0.65f;
     float radius2 = radius1 * 1.414;
     float increase = DEGREES_TO_RADIANS(360/4);
     float base1 = DEGREES_TO_RADIANS(90);

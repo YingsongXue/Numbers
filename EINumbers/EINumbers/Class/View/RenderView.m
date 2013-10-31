@@ -111,7 +111,6 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
 - (void)dealloc
 {
     [_labelFont release];
-    
     [super dealloc];
 }
 
@@ -304,7 +303,7 @@ static CGPathRef CGPathCreateArc(CGPoint center, CGFloat radius, CGFloat startAn
         
         __block NSMutableArray *layersToRemove = nil;
         [CATransaction setCompletionBlock:^{
-            
+
             [layersToRemove enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                 [obj removeFromSuperlayer];
             }];
